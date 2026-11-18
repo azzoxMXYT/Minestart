@@ -39,9 +39,32 @@ jobs:
             (umask 077; printf '%s' "$MINESTART_ANDROID_KEYSTORE_B64" | base64 --decode > "$MINESTART_ANDROID_KEYSTORE")
           fi
           unset MINESTART_ANDROID_KEYSTORE_B64
-          npm run build:android
+          log=$(mktemp)
+          if npm run build:android >"$log" 2>&1; then
+            cat "$log"
+          else
+            cat "$log"
+            detail=$(tail -c 5500 "$log")
+            detail=${detail//\%/%25}
+            detail=${detail//$'\n'/%0A}
+            detail=${detail//$'\r'/%0D}
+            printf '::error::%s\n' "$detail"
+            exit 1
+          fi
       - name: Démarrer le jeu sans réseau sur Android
-        run: bash scripts/smoke-android.sh
+        run: |
+          log=$(mktemp)
+          if bash scripts/smoke-android.sh >"$log" 2>&1; then
+            cat "$log"
+          else
+            tail -100 "$log"
+            detail=$(tail -c 5500 "$log")
+            detail=${detail//\%/%25}
+            detail=${detail//$'\n'/%0A}
+            detail=${detail//$'\r'/%0D}
+            printf '::error::%s\n' "$detail"
+            exit 1
+          fi
       - name: Publier les fichiers mobiles
         env:
           GH_TOKEN: ${{ github.token }}
