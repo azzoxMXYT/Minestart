@@ -560,6 +560,98 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
 }
 @media (pointer: coarse) { .footer-hint { font-size: 11px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0s !important; } }
+
+/* Mode selector, survival HUD and block catalogue. */
+:root { --survival: #ffc285; --survival-soft: #3a2d21; }
+.mode-switch { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 3px; padding: 3px; background: #151910; border: 1px solid #343d2c; border-radius: 7px; }
+.mode-switch button, .inventory-tabs button { display: flex; justify-content: center; align-items: center; gap: 6px; background: transparent; border: 1px solid transparent; border-radius: 5px; min-height: 30px; font-weight: 600; font-size: 12px; color: var(--muted); padding-inline: 5px; white-space: nowrap; }
+.mode-switch button:hover, .inventory-tabs button:hover { color: var(--text); background: #232d20; }
+.mode-switch button[aria-pressed="true"], .inventory-tabs button[aria-pressed="true"] { border-color: #4b5d31; color: var(--lime); background: #2c371f; }
+.mode-switch button[data-mode="survival"][aria-pressed="true"] { color: var(--survival); background: var(--survival-soft); border-color: #69513b; }
+.mode-switch .icon { width: 14px; height: 14px; }
+.mode-help { margin: 6px 0 0; color: var(--muted); font-size: 11px; }
+.inventory-toggle { font-size: 12px; }
+.inventory-toggle .icon { width: 16px; height: 16px; color: #c0d5a3; }
+.inventory-toggle kbd { min-width: 17px; min-height: 18px; font-size: 9px; padding: 0 4px; }
+.game-tag b { font-weight: 500; }
+.is-survival .game-tag span { background: var(--survival); box-shadow: 0 0 7px #ffc28555; }
+.world-clock { position: absolute; top: 44px; right: 13px; display: flex; align-items: center; gap: 6px; pointer-events: none; background: #151e1bca; color: #f2e7d5; border: 1px solid #e2efcc30; border-radius: 5px; padding: 5px 8px; font: 500 10px/1.25 var(--mono); }
+.world-clock .icon { width: 13px; height: 13px; color: var(--survival); }
+.world-clock.is-night .icon { color: #b9cbfe; }
+.vitals { position: relative; display: flex; align-items: center; gap: 8px; padding: 4px 7px; background: #131d14e3; border: 1px solid #85957564; border-radius: 5px; }
+.vitals-divider { width: 1px; height: 13px; background: #8493724d; }
+.vital-meter { display: flex; gap: 2px; color: #ff7771; }
+.vital-meter.food { color: #efb474; }
+.vital-unit { position: relative; width: 12px; height: 12px; image-rendering: pixelated; }
+.vital-unit > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.vital-unit .empty-vital { color: #6e7665; opacity: .49; }
+.vital-unit .fill-vital { clip-path: inset(0 var(--cutoff,0%) 0 0); filter: drop-shadow(0 1px 0 #0c190a); }
+.air-meter { pointer-events: none; position: absolute; width: min(106px,45%); top: -10px; left: 50%; transform: translateX(-50%); height: 6px; padding: 1px; background: #101a21; border: 1px solid #9bc9e18a; border-radius: 2px; }
+.air-meter span, .mine-meter span { display: block; height: 100%; width: var(--percent,100%); background: #96dafa; }
+.mine-meter { pointer-events: none; position: absolute; z-index: 1; left: 50%; top: calc(50% + 17px); transform: translateX(-50%); width: 62px; height: 7px; padding: 1px; background: #151d13da; border: 1px solid #d3e9b682; border-radius: 2px; }
+.mine-meter span { background: var(--lime); }
+.damage-flash { position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 88px 14px #e54342; opacity: 0; }
+.damage-flash.is-hit { animation: hit-flash .38s ease-out; }
+@keyframes hit-flash { from { opacity: .67; } to { opacity: 0; } }
+.viewport.is-dead .damage-flash { opacity: .35; background: #39151555; }
+.viewport.is-dead .start-layer { z-index: 1; }
+.slot-count { position: absolute; bottom: 2px; right: 3px; min-width: 11px; padding: 0 1px; border-radius: 2px; background: #101b10bd; color: #f5f5e6; font: 500 9px/1.2 var(--mono); pointer-events: none; }
+.slot.is-empty { background: #20291d; }
+.slot.is-empty[aria-pressed="true"] { background: #43552a; }
+.slot.is-empty img { opacity: .29; }
+.inventory-dialog { width: min(650px, calc(100% - 32px)); }
+.inventory-tabs { display: flex; align-items: center; gap: 4px; padding: 3px; border-radius: 6px; border: 1px solid #343d2c; background: #151910; margin-top: 12px; }
+.inventory-tabs button { flex: 1; }
+.survival-kit { margin-top: 11px; background: #23291d; border: 1px solid #3b4631; border-radius: 6px; padding: 7px 9px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.survival-kit > div, .survival-kit > div > span { display: flex; gap: 6px; align-items: center; }
+.survival-kit > div > span { flex-direction: column; gap: 1px; align-items: start; }
+.survival-kit small { color: var(--dim); font: 500 9px/1.2 var(--mono); letter-spacing: .08em; }
+.survival-kit strong { font-size: 13px; }
+.survival-kit img { width: 29px; height: 29px; image-rendering: pixelated; }
+.survival-kit .button { min-height: 32px; }
+.survival-kit .button:disabled, .recipe-row button:disabled { cursor: default; opacity: .53; }
+.survival-kit .food-icon { color: var(--survival); width: 14px; height: 14px; stroke: none; }
+.survival-kit kbd { min-width: 17px; min-height: 17px; font-size: 9px; padding: 0 3px; }
+.catalogue-head { display: flex; align-items: center; justify-content: space-between; gap: 9px; margin: 15px 0 10px; }
+.catalogue-head strong { font-size: 15px; }
+.catalogue-head p { color: var(--muted); font-size: 12px; margin-top: 2px; }
+#block-search { min-width: 115px; width: 36%; background: #141a11; border: 1px solid #3f4b35; border-radius: 5px; padding: 7px; color: var(--text); font-size: 12px; }
+.catalogue-grid { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 6px; }
+.catalogue-item { position: relative; padding: 5px 3px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 71px; border: 1px solid #404c35; border-radius: 6px; background: #232a1f; text-align: center; font-size: 10px; line-height: 1.2; }
+.catalogue-item img { width: 34px; height: 34px; image-rendering: pixelated; }
+.catalogue-item[aria-pressed="true"] { border-color: #a2bc69; background: #344326; color: #edf8d4; }
+.catalogue-item:not(:disabled):hover { background: #39482d; border-color: #8fab5e; }
+.catalogue-item:disabled { cursor: default; opacity: .80; }
+.catalogue-item .slot-count { bottom: auto; top: 3px; right: 3px; }
+.catalogue-empty { font-size: 13px; padding: 15px; background: #171d14; color: var(--muted); border: 1px dashed #47553d; border-radius: 6px; }
+.recipe-list { display: grid; gap: 5px; }
+.recipe-row { display: grid; grid-template-columns: 33px 1fr auto; align-items: center; gap: 8px; padding: 6px 7px; border: 1px solid #343e2e; border-radius: 5px; background: #21271d; }
+.recipe-row img { width: 30px; height: 30px; image-rendering: pixelated; }
+.recipe-row strong { font-size: 12px; }
+.recipe-row p { color: var(--muted); font-size: 11px; }
+.recipe-row button { min-height: 28px; padding: 4px 6px; font-size: 11px; }
+.inventory-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 13px; border-top: 1px solid var(--line); padding-top: 9px; font-size: 11px; color: var(--dim); }
+#inventory-status { color: var(--lime); }
+#active-slot { margin-left: auto; text-align: right; }
+@media (max-width: 540px) {
+  .inventory-toggle { gap: 3px; }
+  .inventory-toggle kbd { display: none; }
+  .world-clock { right: 8px; top: 36px; font-size: 9px; }
+  .vital-unit { width: 10px; height: 10px; }
+  .vital-meter { gap: 1px; }
+  .vitals { gap: 5px; }
+  .viewport.is-survival .start-layer { top: 56%; }
+  .viewport.is-survival .touch-controls { bottom: 99px; }
+  .catalogue-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
+}
+@media (max-width: 360px) {
+  .fullscreen span { display: none; }
+  .catalogue-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { .damage-flash.is-hit { animation: none; } }
+
+.aimed-mob .reticle::before, .aimed-mob .reticle::after { background: var(--survival); }
+.viewport.is-dead #play-hint { max-width: min(450px,75vw); white-space: normal; text-align: center; }
 </style>
 </head>
 <body>
@@ -592,6 +684,12 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
     <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
     <symbol id="i-jump" viewBox="0 0 24 24"><path d="M12 17V4m-5 5 5-5 5 5M5 21h14"/></symbol>
     <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14m6-14v14" stroke-width="2.8"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><path d="M8 7V5a4 4 0 0 1 8 0v2M5 7h14l2 13H3zM8 11h8m-8 4h8"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 4-3.3 7-8 9-4.7-2-8-5-8-9V6z"/><path d="M12 7v9m-3-6h6"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.7 14.3a8.8 8.8 0 0 1-11-11 9.1 9.1 0 1 0 11 11Z"/></symbol>
+    <symbol id="i-heart-pixel" viewBox="0 0 12 12"><path d="M1 2h3v1h1v1h2V3h1V2h3v1h1v4h-1v1h-1v1H9v1H8v1H7v1H5v-1H4v-1H3V9H2V8H1V7H0V3h1z" fill="currentColor"/></symbol>
+    <symbol id="i-food-pixel" viewBox="0 0 12 12"><path d="M6 1h4v1h1v1h1v4h-2v1H8v1H6v1H4v2H1v-1H0V8h2V7h2V5h1V3h1z" fill="currentColor"/></symbol>
   </svg>
 
   <header class="topbar">
@@ -611,9 +709,9 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
   <main class="shell">
     <section class="intro" aria-labelledby="main-title">
       <div>
-        <div class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-blocks"/></svg> BAC À SABLE CRÉATIF</div>
+        <div class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-blocks"/></svg> JEU DE BLOCS · CRÉATIF &amp; SURVIE</div>
         <h1 id="main-title">Terrain de jeu<span>.</span></h1>
-        <p>Explore, casse et construis dans un monde fait de blocs.</p>
+        <p>Construis sans limite ou prépare-toi à survivre à la nuit.</p>
       </div>
       <div class="ready" id="ready"><span class="status-dot"></span><span id="ready-text">Prêt à jouer</span></div>
     </section>
@@ -624,6 +722,7 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
           <div class="game-heading"><svg class="icon" aria-hidden="true"><use href="#i-screen"/></svg><span id="view-label">Vue du monde</span></div>
           <div class="game-actions">
             <button class="bare-button pause" id="pause" type="button" aria-label="Mettre en pause" title="Mettre en pause (Échap)" hidden><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg></button>
+            <button class="bare-button inventory-toggle" id="open-inventory" type="button" aria-label="Inventaire (E)"><svg class="icon" aria-hidden="true"><use href="#i-bag"/></svg><span>Inventaire</span><kbd>E</kbd></button>
             <button class="bare-button fullscreen" id="fullscreen" type="button" aria-pressed="false"><svg class="icon" aria-hidden="true"><use id="fullscreen-icon" href="#i-expand"/></svg><span id="fullscreen-label">Plein écran</span></button>
           </div>
         </div>
@@ -634,8 +733,11 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
             <svg class="icon" aria-hidden="true"><use href="#i-crosshair"/></svg>
             <span><b>X</b> <span id="coord-x">52</span></span><span><b>Y</b> <span id="coord-y">20</span></span><span><b>Z</b> <span id="coord-z">93</span></span>
           </div>
-          <div class="game-tag" id="game-tag"><span></span> CRÉATIF</div>
+          <div class="game-tag" id="game-tag"><span></span><b id="game-mode">CRÉATIF</b></div>
+          <div class="world-clock" id="world-clock" hidden><svg class="icon" aria-hidden="true"><use id="clock-icon" href="#i-sun"/></svg><span id="clock-text">Jour 1 · 08:00</span></div>
           <div class="reticle" aria-hidden="true"></div>
+          <div class="mine-meter" id="mine-meter" aria-hidden="true" hidden><span></span></div>
+          <div class="damage-flash" id="damage-flash" aria-hidden="true"></div>
           <div class="start-layer" id="start-layer">
             <button class="play-button" id="play" type="button" disabled><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span id="play-label">Jouer</span></button>
             <div id="play-hint">Clique pour entrer dans le monde</div>
@@ -655,6 +757,12 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
             </div>
           </div>
           <div class="inventory">
+            <div class="vitals" id="vitals" hidden>
+              <div class="vital-meter health" id="health" role="img" aria-label="Vie : 20 sur 20"></div>
+              <div class="vitals-divider" aria-hidden="true"></div>
+              <div class="vital-meter food" id="food" role="img" aria-label="Faim : 20 sur 20"></div>
+              <div class="air-meter" id="air-meter" role="meter" aria-label="Air" aria-valuemin="0" aria-valuemax="10" aria-valuenow="10" hidden><span></span></div>
+            </div>
             <div class="block-caption" id="block-caption">Herbe</div>
             <div class="hotbar" id="hotbar" role="group" aria-label="Choix du bloc"></div>
           </div>
@@ -669,8 +777,12 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
         <section class="panel world-panel" aria-labelledby="world-name">
           <div class="section-kicker"><span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-map"/></svg></span><span>MONDE ACTUEL</span></div>
           <h2 class="world-name" id="world-name">Vallon vert</h2>
+          <div class="mode-switch" role="group" aria-label="Mode de jeu">
+            <button type="button" data-mode="creative" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-blocks"/></svg>Créatif</button>
+            <button type="button" data-mode="survival" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>Survie</button>
+          </div>
+          <p class="mode-help" id="mode-help">Blocs illimités, construction libre.</p>
           <dl class="world-facts">
-            <div><dt>Mode</dt><dd class="mode-value">Créatif</dd></div>
             <div><dt>Graine</dt><dd id="world-seed" class="seed-value">084217</dd></div>
           </dl>
           <button class="button new-world" id="new-world" type="button"><svg class="icon" aria-hidden="true"><use href="#i-rotate"/></svg><span>Nouveau monde</span></button>
@@ -681,10 +793,10 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
           <dl class="controls">
             <div><dt>Se déplacer</dt><dd class="key-group"><kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd></dd></div>
             <div><dt>Sauter</dt><dd><kbd>Espace</kbd></dd></div>
-            <div><dt>Courir</dt><dd><kbd>Maj</kbd></dd></div>
-            <div><dt>Casser un bloc</dt><dd class="mouse-label"><svg class="icon" aria-hidden="true"><use href="#i-mouse-l"/></svg> Clic gauche</dd></div>
+            <div><dt>Casser un bloc</dt><dd class="mouse-label"><svg class="icon" aria-hidden="true"><use href="#i-mouse-l"/></svg><span id="mine-command">Clic gauche</span></dd></div>
             <div><dt>Poser un bloc</dt><dd class="mouse-label"><svg class="icon" aria-hidden="true"><use href="#i-mouse-r"/></svg> Clic droit</dd></div>
             <div><dt>Choisir un bloc</dt><dd class="key-range"><kbd>1</kbd><span>–</span><kbd>8</kbd></dd></div>
+            <div><dt>Inventaire</dt><dd><kbd>E</kbd></dd></div>
           </dl>
           <button class="guide-link" id="open-guide" type="button">Toutes les commandes <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button>
         </section>
@@ -712,7 +824,10 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
       <div><dt>Courir</dt><dd><kbd>Maj</kbd></dd></div>
       <div id="guide-fly"><dt>Activer / arrêter le vol</dt><dd><kbd>Espace</kbd> × 2</dd></div>
       <div id="guide-fly-move"><dt>Monter / descendre en vol</dt><dd><kbd>Espace</kbd> / <kbd>Maj</kbd></dd></div>
-      <div><dt>Casser / poser un bloc</dt><dd>Clic gauche / droit</dd></div>
+      <div><dt>Casser / poser un bloc</dt><dd id="guide-mine">Clic gauche / droit</dd></div>
+      <div><dt>Inventaire / fabrication</dt><dd><kbd>E</kbd></dd></div>
+      <div id="guide-berries" hidden><dt>Récolter des baies</dt><dd>Clic droit sur un buisson</dd></div>
+      <div id="guide-eat" hidden><dt>Manger les baies</dt><dd><kbd>F</kbd></dd></div>
       <div><dt>Choisir un bloc</dt><dd><kbd>1</kbd> – <kbd>8</kbd> ou molette</dd></div>
       <div><dt>Mettre en pause</dt><dd><kbd>Échap</kbd></dd></div>
     </dl>
@@ -725,12 +840,40 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
       <h2 id="new-title">Nouveau monde</h2>
       <button type="submit" class="bare-button dialog-close" aria-label="Fermer"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
     </form>
-    <p class="dialog-copy">Cette action remplace le monde actuel et ses constructions sur cet appareil.</p>
+    <p class="dialog-copy" id="world-warning">Cette action remplace le monde et les constructions du mode actuel uniquement.</p>
     <form id="world-form">
       <label class="seed-label" for="seed-input">Graine du monde <span>(0 à 999999)</span></label>
       <div class="seed-field"><input type="text" inputmode="numeric" pattern="[0-9]{1,6}" maxlength="6" id="seed-input" autocomplete="off" required><button type="button" class="button" id="random-seed"><svg class="icon" aria-hidden="true"><use href="#i-dice"/></svg>Aléatoire</button></div>
       <div class="dialog-actions"><button type="button" class="button" id="cancel-world">Annuler</button><button type="submit" class="button primary">Créer le monde <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></div>
     </form>
+  </dialog>
+  <dialog id="inventory-dialog" class="inventory-dialog" aria-labelledby="inventory-title">
+    <form method="dialog" class="dialog-head">
+      <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-bag"/></svg></span>
+      <h2 id="inventory-title">Inventaire</h2>
+      <button type="submit" class="bare-button dialog-close" aria-label="Fermer"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </form>
+    <div class="inventory-tabs" id="inventory-tabs" role="group" aria-label="Vue de l’inventaire" hidden>
+      <button type="button" data-tab="blocks" aria-pressed="true">Sac à dos</button>
+      <button type="button" data-tab="craft" aria-pressed="false">Fabrication</button>
+    </div>
+    <div class="survival-kit" id="survival-kit" hidden>
+      <div><img id="tool-img" alt="" hidden><span><small>OUTIL ACTIF</small><strong id="tool-name">Mains nues</strong></span></div>
+      <button class="button" id="eat" type="button"><svg class="icon food-icon" aria-hidden="true"><use href="#i-food-pixel"/></svg><span id="eat-text">Manger · 2 baies</span><kbd>F</kbd></button>
+    </div>
+    <section id="blocks-tab" aria-label="Matériaux">
+      <div class="catalogue-head">
+        <div><strong id="catalogue-title">Catalogue de blocs</strong><p id="catalogue-copy">Clique sur un bloc pour le mettre dans ta barre rapide.</p></div>
+        <input id="block-search" type="search" aria-label="Chercher un bloc" placeholder="Chercher un bloc…" autocomplete="off">
+      </div>
+      <div class="catalogue-grid" id="catalogue-grid"></div>
+      <p class="catalogue-empty" id="catalogue-empty" hidden></p>
+    </section>
+    <section id="craft-tab" aria-label="Recettes de fabrication" hidden>
+      <div class="catalogue-head"><div><strong>Recettes</strong><p>Récolte du bois, fabrique des planches, puis ta première pioche.</p></div></div>
+      <div class="recipe-list" id="recipe-list"></div>
+    </section>
+    <div class="inventory-foot"><span id="inventory-status" role="status"></span><span id="active-slot">Emplacement 1 sur 8</span></div>
   </dialog>
   <script>(() => {
 'use strict';
@@ -742,8 +885,23 @@ const CHUNK = 16;
 const SEA = 8;
 const DEFAULT_SEED = 84217;
 const REACH = 8.5;
-const ID = Object.freeze({ AIR: 0, GRASS: 1, DIRT: 2, STONE: 3, SAND: 4, WOOD: 5, LEAVES: 6, PLANKS: 7, BRICKS: 8, WATER: 9, BEDROCK: 10, DAISY: 11, POPPY: 12, TUFT: 13 });
-const TILE = Object.freeze({ GRASS: 0, GRASS_EDGE: 1, DIRT: 2, STONE: 3, SAND: 4, RINGS: 5, BARK: 6, LEAVES: 7, PLANKS: 8, BRICKS: 9, WATER: 10, BEDROCK: 11, DAISY: 12, POPPY: 13, TUFT: 14, CLOUD: 15 });
+const WORLD_GENERATION = 2;
+// Keep the original block numbers: every saved edit refers to one of them.
+const ID = Object.freeze({
+  AIR: 0, GRASS: 1, DIRT: 2, STONE: 3, SAND: 4, WOOD: 5, LEAVES: 6, PLANKS: 7, BRICKS: 8,
+  WATER: 9, BEDROCK: 10, DAISY: 11, POPPY: 12, TUFT: 13, COBBLE: 14, SANDSTONE: 15,
+  GRANITE: 16, SLATE: 17, SNOW: 18, ICE: 19, GLASS: 20, PINE_LOG: 21, PINE_PLANKS: 22,
+  TERRACOTTA: 23, RED_WOOL: 24, BLUE_WOOL: 25, COAL_ORE: 26, COPPER_ORE: 27, IRON_ORE: 28,
+  COPPER_BLOCK: 29, IRON_BLOCK: 30, TORCH: 31, BERRY_BUSH: 32, EMPTY_BUSH: 33,
+});
+const TILE = Object.freeze({
+  GRASS: 0, GRASS_EDGE: 1, DIRT: 2, STONE: 3, SAND: 4, RINGS: 5, BARK: 6, LEAVES: 7,
+  PLANKS: 8, BRICKS: 9, WATER: 10, BEDROCK: 11, DAISY: 12, POPPY: 13, TUFT: 14, CLOUD: 15,
+  COBBLE: 16, SANDSTONE: 17, GRANITE: 18, SLATE: 19, SNOW: 20, ICE: 21, GLASS: 22,
+  PINE_RINGS: 23, PINE_BARK: 24, PINE_PLANKS: 25, TERRACOTTA: 26, RED_WOOL: 27, BLUE_WOOL: 28,
+  COAL_ORE: 29, COPPER_ORE: 30, IRON_ORE: 31, COPPER_BLOCK: 32, IRON_BLOCK: 33,
+  TORCH: 34, BERRY_BUSH: 35, EMPTY_BUSH: 36, SLIME_FACE: 37, SLIME_SKIN: 38,
+});
 const BLOCKS = [
   { name: 'Air', top: 0, side: 0 },
   { name: 'Herbe', top: TILE.GRASS, side: TILE.GRASS_EDGE, bottom: TILE.DIRT },
@@ -759,14 +917,37 @@ const BLOCKS = [
   { name: 'Marguerite', top: TILE.DAISY, side: TILE.DAISY },
   { name: 'Coquelicot', top: TILE.POPPY, side: TILE.POPPY },
   { name: 'Hautes herbes', top: TILE.TUFT, side: TILE.TUFT },
+  { name: 'Pavés', top: TILE.COBBLE, side: TILE.COBBLE },
+  { name: 'Grès', top: TILE.SANDSTONE, side: TILE.SANDSTONE },
+  { name: 'Granite', top: TILE.GRANITE, side: TILE.GRANITE },
+  { name: 'Ardoise', top: TILE.SLATE, side: TILE.SLATE },
+  { name: 'Neige', top: TILE.SNOW, side: TILE.SNOW },
+  { name: 'Glace', top: TILE.ICE, side: TILE.ICE },
+  { name: 'Verre', top: TILE.GLASS, side: TILE.GLASS },
+  { name: 'Tronc de pin', top: TILE.PINE_RINGS, side: TILE.PINE_BARK },
+  { name: 'Planches de pin', top: TILE.PINE_PLANKS, side: TILE.PINE_PLANKS },
+  { name: 'Terre cuite', top: TILE.TERRACOTTA, side: TILE.TERRACOTTA },
+  { name: 'Laine rouge', top: TILE.RED_WOOL, side: TILE.RED_WOOL },
+  { name: 'Laine bleue', top: TILE.BLUE_WOOL, side: TILE.BLUE_WOOL },
+  { name: 'Minerai de charbon', top: TILE.COAL_ORE, side: TILE.COAL_ORE },
+  { name: 'Minerai de cuivre', top: TILE.COPPER_ORE, side: TILE.COPPER_ORE },
+  { name: 'Minerai de fer', top: TILE.IRON_ORE, side: TILE.IRON_ORE },
+  { name: 'Bloc de cuivre', top: TILE.COPPER_BLOCK, side: TILE.COPPER_BLOCK },
+  { name: 'Bloc de fer', top: TILE.IRON_BLOCK, side: TILE.IRON_BLOCK },
+  { name: 'Torche', top: TILE.TORCH, side: TILE.TORCH },
+  { name: 'Buisson à baies', top: TILE.BERRY_BUSH, side: TILE.BERRY_BUSH },
+  { name: 'Buisson récolté', top: TILE.EMPTY_BUSH, side: TILE.EMPTY_BUSH },
 ];
 const PALETTE = [ID.GRASS, ID.DIRT, ID.STONE, ID.SAND, ID.WOOD, ID.LEAVES, ID.PLANKS, ID.BRICKS];
-const isPlant = (block) => block >= ID.DAISY;
+const CATALOGUE = [...PALETTE, ...Array.from({ length: ID.BERRY_BUSH - ID.COBBLE + 1 }, (_, i) => ID.COBBLE + i), ID.DAISY, ID.POPPY];
+const isPlant = (block) => (block >= ID.DAISY && block <= ID.TUFT) || (block >= ID.TORCH && block <= ID.EMPTY_BUSH);
 const solid = (block) => block > ID.AIR && block !== ID.WATER && !isPlant(block);
+const opaque = (block) => solid(block) && block !== ID.GLASS;
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const mix = (a, b, t) => a + (b - a) * t;
 const smooth = (t) => t * t * (3 - 2 * t);
 const indexOf = (x, y, z) => x + z * SIZE + y * AREA;
+const coordsOf = (i) => [i % SIZE, Math.floor(i / AREA), Math.floor(i / SIZE) % SIZE];
 const inside = (x, y, z) => x >= 0 && x < SIZE && y >= 0 && y < HEIGHT && z >= 0 && z < SIZE;
 
 function hash(x, y, z = 0, salt = 0) {
@@ -792,12 +973,14 @@ function worldName(seed) {
 }
 
 class World {
-  constructor(seed = DEFAULT_SEED, edits = []) {
+  constructor(seed = DEFAULT_SEED, edits = [], generation = WORLD_GENERATION) {
     this.seed = seed;
+    this.generation = generation;
     this.blocks = new Uint8Array(AREA * HEIGHT);
     this.surface = new Uint8Array(AREA);
     this.tops = new Uint8Array(AREA);
     this.edits = new Map();
+    this.torches = new Set();
     this.generate();
     this.original = this.blocks.slice();
     // The seed recreates the base map, so only player edits need to be stored.
@@ -807,6 +990,7 @@ class World {
       if (!Number.isInteger(i) || i < AREA || i >= this.blocks.length || !Number.isInteger(id) || id < 0 || id >= BLOCKS.length || id === ID.BEDROCK || id === this.original[i]) continue;
       this.blocks[i] = id;
       this.edits.set(i, id);
+      if (id === ID.TORCH) this.torches.add(i);
     }
     for (let z = 0; z < SIZE; z++) for (let x = 0; x < SIZE; x++) this.refreshTop(x, z);
   }
@@ -826,6 +1010,8 @@ class World {
     if (!inside(x, y, z) || y === 0 || !Number.isInteger(id) || id < 0 || id >= BLOCKS.length || id === ID.BEDROCK) return false;
     const i = indexOf(x, y, z);
     if (this.blocks[i] === id) return false;
+    if (this.blocks[i] === ID.TORCH) this.torches.delete(i);
+    if (id === ID.TORCH) this.torches.add(i);
     this.blocks[i] = id;
     if (id === this.original[i]) this.edits.delete(i);
     else this.edits.set(i, id);
@@ -837,6 +1023,7 @@ class World {
   generate() {
     const seed = this.seed;
     const classic = seed === DEFAULT_SEED;
+    const rich = this.generation >= 2;
     const shift = classic ? 0 : (hash(seed, 43) - .5) * 15;
     const swell = classic ? 1 : .79 + hash(seed, 94) * .39;
     const basin = new Float32Array(AREA);
@@ -873,6 +1060,8 @@ class World {
       const trailX = 52 - (93 - z) * .48 + 1.4 * Math.sin((z - 92) * .34);
       const trail = classic && z > 74 && z < 110 && Math.abs(x - trailX) < 1 + hash(x, z, 1, seed) * .75;
       const depth = 2 + (noise(x / 7, z / 7, seed + 3) > .59 ? 1 : 0);
+      const stonePatch = rich ? noise(x / 5, z / 5, seed + 143) : .5;
+      const snowy = rich && z < 27 && h >= 31 + Math.round(stonePatch * 2);
       for (let y = 0; y <= Math.max(h, SEA); y++) {
         let id;
         if (y === 0) id = ID.BEDROCK;
@@ -881,6 +1070,19 @@ class World {
         else if (y === h) id = bareRock ? ID.STONE : trail ? ID.DIRT : ID.GRASS;
         else if (y >= h - depth && !bareRock) id = ID.DIRT;
         else id = ID.STONE;
+        if (rich) {
+          if (snowy && y === h) id = ID.SNOW;
+          if (beach && y === h - 3 && id === ID.STONE) id = ID.SANDSTONE;
+          if (id === ID.STONE) {
+            const a = hash(x >> 1, y >> 1, z >> 1, seed + 67);
+            const b = hash(x, y, z, seed + 28);
+            if (y < h && y > 2 && a < .023 && b > .15) id = ID.COAL_ORE;
+            else if (y < h && y > 3 && y < 24 && a > .973 && b > .26) id = ID.COPPER_ORE;
+            else if (y < h && y < 15 && a > .935 && a < .960 && b > .24) id = ID.IRON_ORE;
+            else if (stonePatch > .74 && y > h - 7 && b > .2) id = ID.GRANITE;
+            else if (stonePatch < .29 && y < h - 4) id = ID.SLATE;
+          }
+        }
         this.blocks[col + y * AREA] = id;
       }
     }
@@ -897,6 +1099,21 @@ class World {
       const h = this.surface[x + z * SIZE];
       if (!this.get(x, h + 1, z)) this.raw(x, h + 1, z, id);
     }
+    if (rich) this.growBerries();
+  }
+
+  growBerries() {
+    const plant = (x, z, nearSpawn = false) => {
+      const h = this.surface[x + z * SIZE];
+      const floor = this.get(x, h, z), above = this.get(x, h + 1, z);
+      if (h <= SEA || (floor !== ID.GRASS && floor !== ID.DIRT)) return;
+      if (!above || (nearSpawn && above === ID.TUFT)) this.raw(x, h + 1, z, ID.BERRY_BUSH);
+    };
+    for (let z = 3; z < SIZE - 3; z++) for (let x = 3; x < SIZE - 3; x++) {
+      if (hash(x, z, 57, this.seed) > .990) plant(x, z);
+    }
+    // Find food in the first few steps, even in a random world.
+    for (const [x, z] of [[48, 92], [56, 92], [57, 90], [46, 96], [55, 97]]) plant(x, z, true);
   }
 
   growForest(classic) {
@@ -906,7 +1123,7 @@ class World {
       if (base < SEA + 2 || this.get(x, base, z) !== ID.GRASS || trees.some(([tx, tz]) => (x - tx) ** 2 + (z - tz) ** 2 < 23)) return;
       trees.push([x, z]);
       const trunk = (pine ? 7 : 4) + Math.floor(hash(x, z, 81, this.seed) * 3) + boost;
-      for (let y = 1; y <= trunk; y++) this.raw(x, base + y, z, ID.WOOD);
+      for (let y = 1; y <= trunk; y++) this.raw(x, base + y, z, pine && this.generation >= 2 ? ID.PINE_LOG : ID.WOOD);
       const first = pine ? trunk - 5 : trunk - 2;
       for (let y = first; y <= trunk + (pine ? 2 : 1); y++) {
         const d = y - trunk;
@@ -918,6 +1135,7 @@ class World {
       }
     };
     if (classic) for (const [x, z, pine, boost] of [[42, 81, false, 1], [64, 80, false, 1], [36, 73, false, 0], [76, 75, true, 0], [72, 67, false, 1], [35, 60, true, 1], [80, 58, false, 1], [66, 34, true, 0], [48, 34, false, 0]]) plant(x, z, pine, boost);
+    if (this.generation >= 2) { plant(60, 96, false); plant(42, 94, true); }
     for (let gz = 4; gz < SIZE - 5; gz += 6) for (let gx = 4; gx < SIZE - 5; gx += 6) {
       const f = noise(gx / 20, gz / 20, this.seed + 99);
       if (hash(gx, gz, 43, this.seed) > .24 + f * .48) continue;
@@ -936,7 +1154,7 @@ class World {
         const x = 52 + dx, z = 93 + dz;
         const y = this.tops[x + z * SIZE];
         const id = this.get(x, y, z);
-        if (solid(id) && id !== ID.LEAVES && id !== ID.WOOD && y < HEIGHT - 3) {
+        if (solid(id) && id !== ID.LEAVES && id !== ID.WOOD && id !== ID.PINE_LOG && y < HEIGHT - 3) {
           return { x: x + .5, y: y + 1.001, z: z + .5, yaw: .015, pitch: -.105, vy: 0, grounded: true, flying: false };
         }
       }
@@ -1004,6 +1222,21 @@ function lookDirection(p) {
 }
 
 // Step exactly between voxel boundaries rather than sampling through a thin block.
+function rayBox(origin, direction, box, reach) {
+  let near = 0, far = reach;
+  for (let i = 0; i < 3; i++) {
+    if (direction[i] === 0) {
+      if (origin[i] < box[i] || origin[i] > box[i + 3]) return Infinity;
+    } else {
+      const a = (box[i] - origin[i]) / direction[i], b = (box[i + 3] - origin[i]) / direction[i];
+      near = Math.max(near, Math.min(a, b));
+      far = Math.min(far, Math.max(a, b));
+      if (near > far) return Infinity;
+    }
+  }
+  return near;
+}
+
 function raycast(world, origin, direction, reach = REACH) {
   const cell = origin.map(Math.floor);
   const step = direction.map(Math.sign);
@@ -1011,11 +1244,16 @@ function raycast(world, origin, direction, reach = REACH) {
   const next = direction.map((v, i) => v > 0 ? (cell[i] + 1 - origin[i]) / v : v < 0 ? (cell[i] - origin[i]) / v : Infinity);
   let distance = 0;
   let neighbor = null;
-  let plant = null;
   while (distance <= reach) {
     const id = world.get(...cell);
     if (solid(id)) return { cell, neighbor, id, distance };
-    if (isPlant(id) && !plant) plant = { cell: cell.slice(), neighbor: cell.slice(), id, distance };
+    if (isPlant(id)) {
+      const [x,y,z] = cell;
+      const inset = id === ID.TORCH ? .30 : id >= ID.BERRY_BUSH ? .10 : .18;
+      const height = id >= ID.TORCH ? .71 : .92;
+      const plantDistance = rayBox(origin, direction, [x+inset,y,z+inset,x+1-inset,y+height,z+1-inset], reach);
+      if (Number.isFinite(plantDistance)) return { cell, neighbor: cell.slice(), id, distance: plantDistance };
+    }
     const axis = next[0] <= next[1] && next[0] <= next[2] ? 0 : next[1] <= next[2] ? 1 : 2;
     if (!Number.isFinite(next[axis])) break;
     neighbor = cell.slice();
@@ -1023,36 +1261,325 @@ function raycast(world, origin, direction, reach = REACH) {
     distance = next[axis];
     next[axis] += delta[axis];
   }
-  return plant;
+  return null;
+}
+
+const GAME_MODE = Object.freeze({ CREATIVE: 'creative', SURVIVAL: 'survival' });
+const IT = Object.freeze({ BERRIES: BLOCKS.length, COAL: BLOCKS.length + 1, WOOD_PICK: BLOCKS.length + 2, STONE_PICK: BLOCKS.length + 3 });
+const ITEMS = [...BLOCKS, { name: 'Baies' }, { name: 'Charbon' }, { name: 'Pioche en bois' }, { name: 'Pioche en pierre' }];
+const DAY_LENGTH = 240;
+const MAX_VITAL = 20;
+const MAX_AIR = 10;
+const MAX_STACK = 999;
+const TORCH_RADIUS = 6.5;
+const SURVIVAL_REACH = 5.6;
+const ANY_PLANKS = [ID.PLANKS, ID.PINE_PLANKS];
+const RECIPES = [
+  { out: [ID.PLANKS, 4], using: [[ID.WOOD, 1]] },
+  { out: [ID.PINE_PLANKS, 4], using: [[ID.PINE_LOG, 1]] },
+  { out: [IT.WOOD_PICK, 1], using: [[ANY_PLANKS, 3]], unique: true },
+  { out: [IT.STONE_PICK, 1], using: [[ID.STONE, 3], [ANY_PLANKS, 1]], unique: true },
+  { out: [ID.TORCH, 4], using: [[ANY_PLANKS, 1], [IT.COAL, 1]] },
+  { out: [ID.COBBLE, 2], using: [[ID.STONE, 2]] },
+  { out: [ID.SANDSTONE, 1], using: [[ID.SAND, 4]] },
+  { out: [ID.GLASS, 2], using: [[ID.SAND, 2], [IT.COAL, 1]] },
+  { out: [ID.TERRACOTTA, 3], using: [[ID.DIRT, 3], [IT.COAL, 1]] },
+  { out: [ID.BRICKS, 4], using: [[ID.TERRACOTTA, 3], [IT.COAL, 1]] },
+  { out: [ID.RED_WOOL, 2], using: [[ID.LEAVES, 2], [ID.POPPY, 1]] },
+  { out: [ID.BLUE_WOOL, 2], using: [[ID.LEAVES, 2], [ID.COPPER_ORE, 1]] },
+  { out: [ID.COPPER_BLOCK, 1], using: [[ID.COPPER_ORE, 4], [IT.COAL, 1]] },
+  { out: [ID.IRON_BLOCK, 1], using: [[ID.IRON_ORE, 4], [IT.COAL, 1]] },
+];
+
+function daylightAt(clock) {
+  const hour = (clock % DAY_LENGTH) * 24 / DAY_LENGTH;
+  return smooth(clamp((hour - 5.15) / 2.3, 0, 1)) * smooth(clamp((20.3 - hour) / 2.45, 0, 1));
+}
+
+function clockLabel(clock) {
+  const minutes = Math.floor((clock % DAY_LENGTH) * 1440 / DAY_LENGTH);
+  return `Jour ${1 + Math.floor(clock / DAY_LENGTH)} · ${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+}
+
+function mineRule(id, tool) {
+  if (id === ID.BEDROCK) return { hint: 'La roche mère ne peut pas être cassée.' };
+  if (id === ID.IRON_ORE && tool !== IT.STONE_PICK) return { hint: 'Il faut une pioche en pierre pour le fer.' };
+  if ((id === ID.COAL_ORE || id === ID.COPPER_ORE) && !tool) return { hint: 'Fabrique d’abord une pioche dans l’inventaire (E).' };
+  if ([ID.STONE, ID.COBBLE, ID.GRANITE, ID.SLATE, ID.SANDSTONE, ID.COAL_ORE, ID.COPPER_ORE, ID.IRON_ORE, ID.COPPER_BLOCK, ID.IRON_BLOCK].includes(id)) {
+    return { seconds: tool === IT.STONE_PICK ? .32 : tool === IT.WOOD_PICK ? .66 : 1.65 };
+  }
+  return { seconds: id === ID.WOOD || id === ID.PINE_LOG ? .86 : isPlant(id) ? .25 : .43 };
+}
+
+function blockDrop(id) {
+  if (id === ID.GRASS) return ID.DIRT;
+  if (id === ID.COAL_ORE) return IT.COAL;
+  if (id === ID.BERRY_BUSH) return IT.BERRIES;
+  return CATALOGUE.includes(id) ? id : ID.AIR;
+}
+
+function nearestTorch(world, x, y, z, limit = TORCH_RADIUS) {
+  let result = null, distance2 = limit * limit;
+  for (const index of world.torches) {
+    const [tx,ty,tz] = coordsOf(index);
+    const d2 = (x - tx - .5) ** 2 + (y - ty - .5) ** 2 + (z - tz - .5) ** 2;
+    if (d2 < distance2) { distance2 = d2; result = [tx + .5, ty + .5, tz + .5]; }
+  }
+  return result;
+}
+
+const slimeBox = (x, y, z) => [x - .40, y, z - .40, x + .40, y + .77, z + .40];
+const boundNumber = (n, fallback, max) => Number.isFinite(n) ? clamp(n, 0, max) : fallback;
+
+class Survival {
+  constructor(saved) {
+    const data = saved && typeof saved === 'object' ? saved : {};
+    this.health = boundNumber(data.health, MAX_VITAL, MAX_VITAL);
+    this.food = boundNumber(data.food, MAX_VITAL, MAX_VITAL);
+    this.air = boundNumber(data.air, MAX_AIR, MAX_AIR);
+    this.clock = boundNumber(data.clock, 80, 1e9);
+    this.why = typeof data.why === 'string' ? data.why.slice(0, 80) : '';
+    this.bag = new Uint16Array(ITEMS.length);
+    if (Array.isArray(data.bag)) {
+      for (let i = 1; i < this.bag.length; i++) this.bag[i] = Math.floor(boundNumber(data.bag[i], 0, MAX_STACK));
+      this.bag[ID.WATER] = this.bag[ID.BEDROCK] = this.bag[ID.EMPTY_BUSH] = 0;
+    } else this.bag[IT.BERRIES] = 2;
+    this.bushes = new Map();
+    if (Array.isArray(data.bushes)) for (const row of data.bushes) {
+      if (!Array.isArray(row)) continue;
+      const [index, time] = row;
+      if (Number.isInteger(index) && index >= AREA && index < AREA * HEIGHT && Number.isFinite(time)) this.bushes.set(index, time);
+    }
+    this.mobs = [];
+    this.nextGrowth = this.clock + 1;
+    this.nextSpawn = this.clock + 3;
+    this.spawnSerial = 0;
+    this.hurtUntil = 0;
+    this.strikeAt = 0;
+    this.regen = this.drown = this.starve = 0;
+    this.damageCount = 0;
+    this.fallTop = null;
+  }
+
+  snapshot() {
+    return { health: this.health, food: this.food, air: this.air, clock: this.clock, why: this.why, bag: Array.from(this.bag), bushes: Array.from(this.bushes) };
+  }
+
+  get tool() { return this.bag[IT.STONE_PICK] ? IT.STONE_PICK : this.bag[IT.WOOD_PICK] ? IT.WOOD_PICK : 0; }
+  get dead() { return this.health <= 0; }
+  get night() { return daylightAt(this.clock) < .19; }
+  count(id) { return this.bag[id] ?? 0; }
+
+  add(id, quantity = 1) {
+    if (!Number.isInteger(id) || id <= 0 || id >= ITEMS.length || quantity <= 0) return 0;
+    const added = Math.min(MAX_STACK - this.bag[id], quantity);
+    this.bag[id] += added;
+    return added;
+  }
+
+  spend(id, quantity = 1) {
+    if (quantity <= 0 || this.count(id) < quantity) return false;
+    this.bag[id] -= quantity;
+    return true;
+  }
+
+  ingredientCount(material) {
+    return Array.isArray(material) ? material.reduce((sum, id) => sum + this.count(id), 0) : this.count(material);
+  }
+
+  canCraft(recipe) {
+    const [id, count] = recipe.out;
+    return !this.dead && (!recipe.unique || !this.count(id)) && this.count(id) + count <= MAX_STACK &&
+      recipe.using.every(([material, amount]) => this.ingredientCount(material) >= amount);
+  }
+
+  craft(recipe) {
+    if (!this.canCraft(recipe)) return false;
+    for (const [material, amount] of recipe.using) {
+      let rest = amount;
+      for (const id of Array.isArray(material) ? material : [material]) {
+        const use = Math.min(rest, this.count(id));
+        if (use) this.spend(id, use);
+        rest -= use;
+      }
+    }
+    this.add(...recipe.out);
+    return true;
+  }
+
+  eat() {
+    if (this.dead || this.food >= MAX_VITAL - .15 || !this.spend(IT.BERRIES)) return false;
+    this.food = Math.min(MAX_VITAL, this.food + 5);
+    return true;
+  }
+
+  harvest(world, cell) {
+    if (this.dead || world.get(...cell) !== ID.BERRY_BUSH || this.count(IT.BERRIES) >= MAX_STACK) return 0;
+    if (!world.set(...cell, ID.EMPTY_BUSH)) return 0;
+    this.bushes.set(indexOf(...cell), this.clock + 43);
+    return this.add(IT.BERRIES, 2);
+  }
+
+  hurt(amount, reason) {
+    if (this.dead || this.clock < this.hurtUntil) return false;
+    this.health = Math.max(0, this.health - amount);
+    this.why = reason;
+    this.hurtUntil = this.clock + .72;
+    this.regen = 0;
+    this.damageCount++;
+    return true;
+  }
+
+  respawn() {
+    this.health = MAX_VITAL;
+    this.food = MAX_VITAL;
+    this.air = MAX_AIR;
+    this.why = '';
+    this.regen = this.drown = this.starve = 0;
+    this.mobs = [];
+    this.fallTop = null;
+    this.nextSpawn = this.clock + 12;
+    this.hurtUntil = this.clock + 3;
+  }
+
+  step(world, p, axes, dt, onChange = () => {}) {
+    if (this.dead) return;
+    this.clock += dt;
+    const x = Math.floor(p.x), z = Math.floor(p.z);
+    const submerged = world.get(x, Math.floor(p.y + EYE), z) === ID.WATER;
+    const swimming = submerged || world.get(x, Math.floor(p.y + .35), z) === ID.WATER;
+    const moving = Boolean(axes.side || axes.forward);
+    this.food = Math.max(0, this.food - dt * (.019 + (moving ? .037 : 0) + (moving && axes.sprint && !swimming ? .12 : 0)));
+    if (swimming) this.fallTop = null;
+    else if (!p.grounded) this.fallTop = Math.max(this.fallTop ?? p.y, p.y);
+    else if (this.fallTop !== null) {
+      const distance = this.fallTop - p.y;
+      this.fallTop = null;
+      if (distance > 3.35) this.hurt(Math.floor(distance - 2.35) * 2, 'La chute a été trop haute.');
+    }
+    this.air = submerged ? Math.max(0, this.air - dt) : MAX_AIR;
+    if (this.air <= 0) {
+      this.drown += dt;
+      if (this.drown >= 1.1) { this.hurt(2, 'Tu as manqué d’air sous l’eau.'); this.drown = 0; }
+    } else this.drown = 0;
+    if (this.food <= 0) {
+      this.starve += dt;
+      if (this.starve >= 3.2) { this.hurt(2, 'Tu as manqué de nourriture.'); this.starve = 0; }
+    } else this.starve = 0;
+    if (!this.dead && this.health < MAX_VITAL && this.food >= 17 && this.clock > this.hurtUntil + 1) {
+      this.regen += dt;
+      if (this.regen >= 5) { this.health++; this.food = Math.max(0, this.food - .65); this.regen = 0; }
+    } else this.regen = 0;
+    if (this.clock >= this.nextGrowth) {
+      this.nextGrowth = this.clock + 1;
+      for (const [i, time] of this.bushes) if (time <= this.clock) {
+        const cell = coordsOf(i);
+        if (world.get(...cell) === ID.EMPTY_BUSH && world.set(...cell, ID.BERRY_BUSH)) onChange(cell[0], cell[2]);
+        this.bushes.delete(i);
+      }
+    }
+    if (!this.dead) this.moveSlimes(world, p, dt);
+  }
+
+  spawnSlime(world, p) {
+    for (let i = 0; i < 18; i++) {
+      const id = ++this.spawnSerial;
+      const a = hash(id, 65, Math.floor(this.clock), world.seed) * Math.PI * 2;
+      const r = 9 + hash(id, 33, Math.floor(this.clock), world.seed) * 11;
+      const x = Math.floor(p.x + Math.cos(a) * r), z = Math.floor(p.z + Math.sin(a) * r);
+      if (x < 1 || z < 1 || x >= SIZE - 1 || z >= SIZE - 1) continue;
+      let top = world.tops[x + z * SIZE];
+      while (isPlant(world.get(x,top,z))) top--;
+      const floor = world.get(x,top,z), y = top + 1.001;
+      if (!solid(floor) || floor === ID.LEAVES || floor === ID.WOOD || floor === ID.PINE_LOG || Math.abs(p.y - y) > 7 ||
+          nearestTorch(world, x+.5,y,z+.5) || collides(world, slimeBox(x+.5,y,z+.5))) continue;
+      this.mobs.push({ id, x: x+.5, y, z: z+.5, vy: 0, hp: 3, blink: 0, phase: id * 3.1, bite: this.clock + 1 });
+      return true;
+    }
+    return false;
+  }
+
+  moveSlimes(world, p, dt) {
+    if (!this.night) { this.mobs.length = 0; return; }
+    if (this.clock >= this.nextSpawn && this.mobs.length < 4) {
+      this.nextSpawn = this.clock + 5.6;
+      this.spawnSlime(world, p);
+    }
+    for (let i = this.mobs.length - 1; i >= 0; i--) {
+      const slime = this.mobs[i];
+      const mx = p.x - slime.x, mz = p.z - slime.z;
+      if (Math.hypot(mx, mz) > 35) { this.mobs.splice(i, 1); continue; }
+      const lamp = nearestTorch(world, slime.x, slime.y + .35, slime.z);
+      const dx = lamp ? slime.x - lamp[0] : mx;
+      const dz = lamp ? slime.z - lamp[2] : mz;
+      const mag = Math.max(.3, Math.hypot(dx, dz));
+      const speed = this.clock < slime.blink ? .36 : 2.05 + .49 * Math.sin(this.clock * 7 + slime.phase);
+      const tryMove = (x,z) => {
+        if (!lamp && nearestTorch(world, x, slime.y + .35, z)) return;
+        if (!collides(world, slimeBox(x,slime.y,z))) { slime.x = x; slime.z = z; }
+        else if (Math.abs(slime.vy) < .1 && !collides(world, slimeBox(x,slime.y + 1.006,z))) {
+          slime.x = x; slime.z = z; slime.y += 1.006;
+        }
+      };
+      tryMove(slime.x + dx / mag * speed * dt, slime.z);
+      tryMove(slime.x, slime.z + dz / mag * speed * dt);
+      slime.vy = Math.max(-9, slime.vy - 17 * dt);
+      const dy = slime.vy * dt;
+      if (collides(world, slimeBox(slime.x, slime.y + dy, slime.z))) {
+        let lo = 0, hi = 1;
+        for (let j = 0; j < 6; j++) {
+          const t = (lo + hi) / 2;
+          if (collides(world, slimeBox(slime.x, slime.y + dy * t, slime.z))) hi = t;
+          else lo = t;
+        }
+        slime.y += dy * lo;
+        slime.vy = 0;
+      } else slime.y += dy;
+      if (!lamp && this.clock >= slime.bite && Math.hypot(p.x - slime.x, p.z - slime.z) < .93 && Math.abs(p.y - slime.y) < .86) {
+        if (this.hurt(3, 'Une gelée nocturne t’a surpris.')) slime.bite = this.clock + 1.4;
+      }
+    }
+  }
+
+  strike(slime) {
+    if (this.dead || this.clock < this.strikeAt || !this.mobs.includes(slime)) return null;
+    this.strikeAt = this.clock + .39;
+    slime.blink = this.clock + .28;
+    slime.hp -= this.tool ? 2 : 1;
+    if (slime.hp > 0) return 'Gelée repoussée';
+    this.mobs.splice(this.mobs.indexOf(slime), 1);
+    return this.add(IT.BERRIES) ? 'Gelée dissipée · +1 baie' : 'Gelée dissipée';
+  }
 }
 
 const PIXELS = 16;
-const ATLAS_SIZE = 128;
+const ATLAS_SIZE = 256;
 const CELL = 32;
 const PAD = 8;
-const tileOrigin = (tile) => [(tile % 4 * CELL + PAD) / ATLAS_SIZE, ((tile >> 2) * CELL + PAD) / ATLAS_SIZE];
+const ATLAS_COLUMNS = ATLAS_SIZE / CELL;
+const tileOrigin = (tile) => [(tile % ATLAS_COLUMNS * CELL + PAD) / ATLAS_SIZE, (Math.floor(tile / ATLAS_COLUMNS) * CELL + PAD) / ATLAS_SIZE];
 const canvasOf = (w, h) => Object.assign(document.createElement('canvas'), { width: w, height: h });
 
 function makeArt() {
   const atlas = canvasOf(ATLAS_SIZE, ATLAS_SIZE);
   const atlasCtx = atlas.getContext('2d');
   atlasCtx.imageSmoothingEnabled = false;
-  const tiles = Array.from({ length: 16 }, () => canvasOf(PIXELS, PIXELS));
+  const tiles = Array.from({ length: Math.max(...Object.values(TILE)) + 1 }, () => canvasOf(PIXELS, PIXELS));
   for (let tile = 0; tile < tiles.length; tile++) {
     const ctx = tiles[tile].getContext('2d');
-    if (tile === TILE.DAISY || tile === TILE.POPPY || tile === TILE.TUFT) {
+    if ([TILE.DAISY, TILE.POPPY, TILE.TUFT, TILE.BERRY_BUSH, TILE.EMPTY_BUSH, TILE.TORCH].includes(tile)) {
       paintPlant(ctx, tile);
     } else {
       const data = ctx.createImageData(PIXELS, PIXELS);
       for (let y = 0; y < PIXELS; y++) for (let x = 0; x < PIXELS; x++) {
         const at = (x + y * PIXELS) * 4;
         const rgb = texel(tile, x, y);
-        data.data.set([...rgb, 255], at);
+        data.data.set(rgb.length === 4 ? rgb : [...rgb, 255], at);
       }
       ctx.putImageData(data, 0, 0);
     }
     // Extend the border pixels so the mip maps do not bleed into the next tile.
-    const bx = tile % 4 * CELL, by = (tile >> 2) * CELL;
+    const bx = tile % ATLAS_COLUMNS * CELL, by = Math.floor(tile / ATLAS_COLUMNS) * CELL;
     const bands = [[0, 1, 0, PAD], [0, PIXELS, PAD, PIXELS], [PIXELS - 1, 1, PAD + PIXELS, PAD]];
     for (const [sx, sw, dx, dw] of bands) for (const [sy, sh, dy, dh] of bands) {
       atlasCtx.drawImage(tiles[tile], sx, sy, sw, sh, bx + dx, by + dy, dw, dh);
@@ -1121,6 +1648,70 @@ function texel(tile, x, y) {
     }
     case TILE.BEDROCK:
       return tint(77, 85, 79, d * 1.55);
+    case TILE.COBBLE: {
+      const row = y >> 2, col = (x + row * 3) % 8;
+      if (y % 4 === 0 || col === 0) return tint(78, 87, 80, d * .38);
+      return tint(139, 146, 133, d * .8 + (hash(x - col, row, 3) - .5) * 31 + (y % 4 === 1 ? 12 : 0));
+    }
+    case TILE.SANDSTONE:
+      return tint(202, 177, 120, d * .63 + (y % 5 === 0 ? -11 : y % 5 === 1 ? 6 : 0));
+    case TILE.GRANITE:
+      return h < .08 ? tint(90, 66, 64) : h > .91 ? tint(190, 157, 145) : tint(151, 114, 104, d * 1.05);
+    case TILE.SLATE:
+      return tint(91, 110, 120, d * .8 - ((x + y * 2) % 7 === 0 ? 13 : 0));
+    case TILE.SNOW:
+      return tint(227, 236, 239, d * .42 + (h > .82 ? 6 : 0));
+    case TILE.ICE:
+      return tint(127, 188, 211, d * .64 + ((x + 3 * y) % 17 < 2 ? 23 : 0));
+    case TILE.GLASS: {
+      if (x === 0 || x === 15 || y === 0 || y === 15) return [...tint(134, 193, 203, d * .35), 255];
+      if ((x === 1 || x === 14 || y === 1 || y === 14) && h > .26) return [182, 222, 222, 216];
+      if ((x + y === 8 && x > 2 && y > 2) || (x + y === 16 && x > 8 && y > 2 && y < 7)) return [200, 238, 234, 190];
+      return [130, 193, 201, 0];
+    }
+    case TILE.PINE_RINGS: {
+      const [r,g,b] = texel(TILE.RINGS, x, y);
+      return [r - 22, g - 21, b - 14];
+    }
+    case TILE.PINE_BARK: {
+      const [r,g,b] = texel(TILE.BARK, x, y);
+      return [r - 15, g - 13, b - 6];
+    }
+    case TILE.PINE_PLANKS: {
+      const [r,g,b] = texel(TILE.PLANKS, x, y);
+      return [r - 17, g - 19, b - 10];
+    }
+    case TILE.TERRACOTTA:
+      return tint(184, 111, 77, d * .68 + (y % 6 === 0 ? -8 : 0));
+    case TILE.RED_WOOL:
+      return tint(181, 73, 71, d * .86 + ((x + y) % 3 ? 0 : 9));
+    case TILE.BLUE_WOOL:
+      return tint(67, 118, 167, d * .86 + ((x + y) % 3 ? 0 : 9));
+    case TILE.COAL_ORE:
+    case TILE.COPPER_ORE:
+    case TILE.IRON_ORE: {
+      const patch = noise(x / 2.9, y / 2.9, tile * 19);
+      if ((patch > .61 && h > .14) || (patch > .50 && h > .94)) {
+        if (tile === TILE.COAL_ORE) return tint(50, 56, 55, d * .8);
+        if (tile === TILE.COPPER_ORE) return tint(198, 119, 75, d * .92 + (h < .31 ? -28 : 10));
+        return tint(196, 153, 126, d * .83);
+      }
+      return texel(TILE.STONE, x, y);
+    }
+    case TILE.COPPER_BLOCK:
+    case TILE.IRON_BLOCK: {
+      const rim = x === 0 || y === 0 ? 23 : x === 15 || y === 15 ? -26 : 0;
+      const bolt = (x === 2 || x === 13) && (y === 2 || y === 13) ? -27 : 0;
+      return tile === TILE.COPPER_BLOCK ? tint(188, 112, 73, d * .48 + rim + bolt) : tint(171, 181, 177, d * .45 + rim + bolt);
+    }
+    case TILE.SLIME_FACE:
+    case TILE.SLIME_SKIN: {
+      if (tile === TILE.SLIME_FACE) {
+        if ((x >= 3 && x <= 5 || x >= 10 && x <= 12) && y >= 6 && y <= 9) return (y === 6 && (x === 3 || x === 10)) ? [212, 249, 206] : [22, 60, 64];
+        if ((x === 7 || x === 8) && y === 11) return [39, 107, 94];
+      }
+      return tint(96, 181, 147, d * .56 + (x === 0 || y === 0 ? 23 : x === 15 || y > 13 ? -13 : 0));
+    }
     default:
       return tint(247, 249, 236, (blocky - .5) * 4);
   }
@@ -1128,6 +1719,22 @@ function texel(tile, x, y) {
 
 function paintPlant(ctx, tile) {
   const rect = (color, x, y, w, h) => { ctx.fillStyle = color; ctx.fillRect(x, y, w, h); };
+  if (tile === TILE.TORCH) {
+    rect('#604128', 7, 8, 3, 8); rect('#a47e47', 7, 9, 1, 7);
+    rect('#d87638', 6, 6, 5, 4); rect('#ffab4a', 6, 5, 4, 4);
+    rect('#ffd782', 7, 4, 3, 3); rect('#fff2af', 8, 3, 1, 3);
+    return;
+  }
+  if (tile === TILE.BERRY_BUSH || tile === TILE.EMPTY_BUSH) {
+    rect('#735230', 7, 10, 2, 6);
+    rect('#3c6132', 2, 9, 12, 5); rect('#608f3f', 3, 7, 10, 5);
+    rect('#7ba347', 5, 5, 6, 3); rect('#507934', 1, 10, 4, 3); rect('#568341', 11, 8, 4, 4);
+    rect('#86a953', 4, 7, 3, 1); rect('#628f3f', 7, 11, 3, 3); rect('#94b25b', 9, 6, 1, 2);
+    if (tile === TILE.BERRY_BUSH) for (const [x,y] of [[4,9],[8,7],[11,10],[7,11]]) {
+      rect('#be404a', x,y,2,2); rect('#f27f68', x,y,1,1);
+    }
+    return;
+  }
   if (tile === TILE.TUFT) {
     rect('#55792c', 6, 10, 3, 6); rect('#769741', 7, 7, 2, 8);
     rect('#5e8534', 4, 9, 2, 4); rect('#5e8534', 5, 12, 2, 4);
@@ -1149,10 +1756,14 @@ function blockIcon(tiles, id) {
   const canvas = canvasOf(48, 48), ctx = canvas.getContext('2d');
   ctx.imageSmoothingEnabled = false;
   const { top, side } = BLOCKS[id];
+  if (isPlant(id)) {
+    ctx.drawImage(tiles[top], 2, -1, 44, 44);
+    return canvas.toDataURL();
+  }
   function face(tile, ox, oy, ux, uy, vx, vy, shade = 0) {
     ctx.setTransform(ux / PIXELS, uy / PIXELS, vx / PIXELS, vy / PIXELS, ox, oy);
     ctx.drawImage(tiles[tile], 0, 0);
-    if (shade) {
+    if (shade && id !== ID.GLASS) {
       ctx.fillStyle = `rgba(15,22,11,${shade})`;
       ctx.fillRect(0, 0, PIXELS, PIXELS);
     }
@@ -1168,6 +1779,31 @@ function blockIcon(tiles, id) {
   return canvas.toDataURL();
 }
 
+function resourceIcon(tiles, id) {
+  if (id < BLOCKS.length) return blockIcon(tiles, id);
+  const image = canvasOf(32,32);
+  const ctx = image.getContext('2d');
+  const rect = (color,x,y,w,h) => { ctx.fillStyle = color; ctx.fillRect(x,y,w,h); };
+  if (id === IT.BERRIES) {
+    rect('#5e8a42', 14,5,4,8); rect('#94b854', 18,4,5,4); rect('#77a04b', 9,6,6,4);
+    for (const [x,y] of [[6,13],[16,11],[12,20]]) {
+      rect('#7a2f40', x,y+1,9,7); rect('#b74554', x+1,y,7,8); rect('#f07871', x+2,y+1,3,2);
+    }
+  } else if (id === IT.COAL) {
+    rect('#26302e',6,13,20,12); rect('#333e3c',9,8,14,16); rect('#4f5853',13,6,7,12); rect('#596360',10,11,5,4); rect('#242c2b',17,19,10,4);
+  } else {
+    const stone = id === IT.STONE_PICK;
+    for (let i = 0; i < 13; i++) {
+      rect('#634831', 5+i,23-i,4,4); rect('#ae8254', 5+i,23-i,2,2);
+    }
+    for (const [x,y] of [[11,4],[15,5],[19,7],[22,10],[24,14]]) {
+      rect(stone ? '#68716e' : '#6f5639', x,y,5,5);
+      rect(stone ? '#b2bcb2' : '#c4a16a', x,y,5,2);
+    }
+  }
+  return image.toDataURL();
+}
+
 const FACES = [
   { n: [0, 1, 0], axes: [0, 2], light: 1.11, corners: [[0,1,0],[1,1,0],[1,1,1],[0,1,1]] },
   { n: [0,-1, 0], axes: [0, 2], light: .50, corners: [[0,0,1],[1,0,1],[1,0,0],[0,0,0]] },
@@ -1177,22 +1813,27 @@ const FACES = [
   { n: [-1,0, 0], axes: [1, 2], light: .94, corners: [[0,1,0],[0,1,1],[0,0,1],[0,0,0]] },
 ];
 const UV = [[0,0],[1,0],[1,1],[0,1]];
-const STRIDE = 9;
+const STRIDE = 10;
 const PER_ROW = SIZE / CHUNK;
 const HORIZON = [.71, .855, .895];
+const NIGHT_HORIZON = [.12, .19, .30];
 const GL_VERTEX = `
   attribute vec3 position;
   attribute vec2 uv;
   attribute vec3 light;
   attribute float material;
+  attribute float glow;
   uniform mat4 projection;
+  uniform vec3 offset;
+  uniform vec3 scale;
   varying vec2 vUv;
   varying vec3 vLight;
   varying vec3 vWorld;
   varying float vMaterial;
+  varying float vGlow;
   void main() {
-    vUv = uv; vLight = light; vWorld = position; vMaterial = material;
-    gl_Position = projection * vec4(position, 1.0);
+    vUv = uv; vLight = light; vWorld = position * scale + offset; vMaterial = material; vGlow = glow;
+    gl_Position = projection * vec4(vWorld, 1.0);
   }
 `;
 const GL_FRAGMENT = `
@@ -1202,10 +1843,14 @@ const GL_FRAGMENT = `
   uniform vec3 fogColor;
   uniform vec2 fogRange;
   uniform float clock;
+  uniform float daylight;
+  uniform vec3 lakeTile;
+  uniform float flash;
   varying vec2 vUv;
   varying vec3 vLight;
   varying vec3 vWorld;
   varying float vMaterial;
+  varying float vGlow;
   void main() {
     float dist = distance(eye, vWorld);
     vec4 texel = texture2D(atlas, vUv);
@@ -1214,12 +1859,17 @@ const GL_FRAGMENT = `
     if (vMaterial > .5 && vMaterial < 1.5) {
       vec2 p = floor(vWorld.xz * 16.0) / 16.0;
       vec2 ripple = fract(p * vec2(.43, .69) + vec2(clock * .035, 0.0));
-      vec3 lake = texture2D(atlas, vec2(.5625,.5625) + ripple * .125).rgb;
+      vec3 lake = texture2D(atlas, lakeTile.xy + ripple * lakeTile.z).rgb;
       float bands = sin(p.y * 6.6 + sin(p.x * .48 + clock * .65) * 2.5 + clock * .76);
       float streak = smoothstep(.66, 1.0, bands) * smoothstep(-.3, .8, sin(p.x * 2.15 - p.y + clock * .4));
       color = mix(color, lake * vLight, .74);
       color = mix(color, vec3(.59,.80,.83), .24 * streak + .13 * smoothstep(12.0, 56.0, dist));
     }
+    vec3 dayShade = mix(vec3(.34,.46,.69), vec3(1.0), daylight);
+    vec3 warm = color * vec3(1.14,.91,.62) + vec3(.048,.027,.006);
+    color = mix(color * dayShade, warm, vGlow * mix(.9,.19,daylight));
+    if (vMaterial > 3.5 && vMaterial < 4.5) color = texel.rgb * mix(.84,1.06,daylight);
+    if (vMaterial > 4.5) color = mix(color + vec3(.02,.045,.033), vec3(.91,.96,.85), flash);
     float fog = smoothstep(fogRange.x, fogRange.y, dist);
     if (vMaterial > 1.5 && vMaterial < 2.5) fog = smoothstep(58.0, 200.0, dist) * .56;
     gl_FragColor = vec4(mix(color, fogColor, fog * .86), 1.0);
@@ -1239,13 +1889,35 @@ const SKY_FRAGMENT = `
   uniform vec2 lens;
   uniform vec3 horizon;
   uniform float submerged;
+  uniform float daylight;
   void main() {
     vec3 d = normalize(forward + right * screen.x * lens.x + up * screen.y * lens.y);
     float h = smoothstep(-.11, .52, d.y);
     vec3 sky = mix(horizon, vec3(.32,.64,.88), h);
     float glow = pow(max(0.0, dot(d, normalize(vec3(-.52,.43,-.49)))), 6.0);
     sky = mix(sky, vec3(.92,.93,.79), .20 * glow);
-    gl_FragColor = vec4(mix(sky, vec3(.22,.52,.61),submerged), 1.0);
+    if (daylight < .999) {
+      vec3 night = mix(vec3(.105,.173,.283), vec3(.046,.076,.162), h);
+      vec3 starCell = floor(d * 118.0);
+      float star = step(.996, fract(sin(dot(starCell,vec3(7.13,33.31,27.72))) * 4912.19));
+      night += vec3(.52,.62,.76) * star * smoothstep(-.01,.13,d.y) * (1.0 - daylight);
+      vec3 moonDirection = normalize(vec3(.285,.195,-.94));
+      float moonFacing = dot(d, moonDirection);
+      if (moonFacing > .976) {
+        vec3 moonRight = normalize(vec3(-moonDirection.z,0.0,moonDirection.x));
+        vec3 moonUp = cross(moonRight, moonDirection);
+        vec2 pixel = floor(vec2(dot(d,moonRight),dot(d,moonUp)) * 196.0);
+        vec2 edge = abs(pixel + .5);
+        float moon = step(max(edge.x,edge.y),6.5) * step(edge.x+edge.y,9.5);
+        float crater = max(step(length(pixel-vec2(2.0,2.0)),2.4), step(length(pixel-vec2(-3.0,-1.0)),1.6));
+        vec3 rock = mix(vec3(.78,.89,.94),vec3(.51,.65,.75),crater * .8);
+        night += vec3(.048,.065,.094) * smoothstep(.979,.999,moonFacing);
+        night = mix(night,rock,moon * (1.0 - daylight));
+      }
+      sky = mix(night,sky,daylight);
+      sky = mix(sky,vec3(.79,.43,.37), 4.0 * daylight * (1.0 - daylight) * (1.0 - h) * .35);
+    }
+    gl_FragColor = vec4(mix(sky, vec3(.14,.42,.53) * mix(.55,1.0,daylight),submerged), 1.0);
   }
 `;
 const LINE_VERTEX = `
@@ -1280,14 +1952,14 @@ function program(gl, vertex, fragment, attrs, uniforms) {
 class MeshWriter {
   constructor() { this.pages = []; this.verts = []; this.indices = []; }
 
-  face(corners, tile, light, material, turn = 0, double = false) {
+  face(corners, tile, light, material, turn = 0, double = false, glow = 0) {
     if (this.verts.length >= 60000 * STRIDE) this.finish();
     const offset = this.verts.length / STRIDE;
     const [u, v] = tileOrigin(tile);
     const pixel = PIXELS / ATLAS_SIZE;
     for (let i = 0; i < 4; i++) {
       const [s, t] = UV[(i + turn) % 4];
-      this.verts.push(...corners[i], u + s * pixel, v + t * pixel, ...light[i], material);
+      this.verts.push(...corners[i], u + s * pixel, v + t * pixel, ...light[i], material, glow);
     }
     // The brighter diagonal gives smoother joins between ambient-occlusion corners.
     const flip = light[0][0] + light[2][0] > light[1][0] + light[3][0];
@@ -1309,11 +1981,11 @@ function occlusion(world, outside, axisA, axisB, corner) {
   const sb = corner[axisB] === 0 ? -1 : 1;
   const sample = outside.slice();
   sample[axisA] += sa;
-  const a = solid(world.get(...sample));
+  const a = opaque(world.get(...sample));
   sample[axisB] += sb;
-  const b2 = solid(world.get(...sample));
+  const b2 = opaque(world.get(...sample));
   sample[axisA] -= sa;
-  const b = solid(world.get(...sample));
+  const b = opaque(world.get(...sample));
   return a && b ? .62 : [1, .90, .77, .62][Number(a) + Number(b) + Number(b2)];
 }
 
@@ -1322,13 +1994,22 @@ function sunShade(world, x, y, z, n) {
   const ox = x + .5 + n[0] * .61, oy = y + .5 + n[1] * .61, oz = z + .5 + n[2] * .61;
   for (let d = 1; d < 9; d++) {
     const id = world.get(Math.floor(ox - d * .65), Math.floor(oy + d * .84), Math.floor(oz + d * .41));
-    if (solid(id)) return d <= 3 ? .73 : .83;
+    if (opaque(id)) return d <= 3 ? .73 : .83;
   }
   return 1;
 }
 
 function terrainMesh(world, cx, cz) {
   const mesh = new MeshWriter();
+  const lights = Array.from(world.torches, coordsOf).filter(([x,,z]) => x >= cx * CHUNK - 7 && x < (cx + 1) * CHUNK + 7 && z >= cz * CHUNK - 7 && z < (cz + 1) * CHUNK + 7);
+  const glowAt = (x,y,z) => {
+    let glow = 0;
+    for (const [tx,ty,tz] of lights) {
+      const d = (x-tx)**2 + (y-ty)**2 + (z-tz)**2;
+      glow = Math.max(glow, 1 - d / (TORCH_RADIUS * TORCH_RADIUS));
+    }
+    return glow * glow;
+  };
   for (let z = cz * CHUNK; z < (cz + 1) * CHUNK; z++) for (let x = cx * CHUNK; x < (cx + 1) * CHUNK; x++) {
     const top = world.tops[x + z * SIZE];
     for (let y = 0; y <= top; y++) {
@@ -1339,9 +2020,10 @@ function terrainMesh(world, cx, cz) {
         const shade = sunShade(world, x, y, z, [0,0,0]);
         const power = shade * .99;
         const light = Array(4).fill([power, power, power * .96]);
-        const a = .12, b = .88;
-        mesh.face([[x+a,y+1,z+a],[x+b,y+1,z+b],[x+b,y,z+b],[x+a,y,z+a]], tile.top, light, 3, 0, true);
-        mesh.face([[x+b,y+1,z+a],[x+a,y+1,z+b],[x+a,y,z+b],[x+b,y,z+a]], tile.top, light, 3, 0, true);
+        const a = id === ID.TORCH ? .20 : .12, b = 1 - a;
+        const kind = id === ID.TORCH ? 4 : 3, glow = glowAt(x,y,z);
+        mesh.face([[x+a,y+1,z+a],[x+b,y+1,z+b],[x+b,y,z+b],[x+a,y,z+a]], tile.top, light, kind, 0, true, glow);
+        mesh.face([[x+b,y+1,z+a],[x+a,y+1,z+b],[x+a,y,z+b],[x+b,y,z+a]], tile.top, light, kind, 0, true, glow);
         continue;
       }
       for (let i = 0; i < FACES.length; i++) {
@@ -1349,7 +2031,7 @@ function terrainMesh(world, cx, cz) {
         const outside = [x + n[0], y + n[1], z + n[2]];
         if (outside[1] < 0) continue;
         const other = world.get(...outside);
-        if (solid(other) || (id === ID.WATER && other === ID.WATER)) continue;
+        if (opaque(other) || (id === ID.WATER && other === ID.WATER) || (id === ID.GLASS && other === ID.GLASS)) continue;
         const art = i === 0 ? tile.top : i === 1 ? tile.bottom ?? tile.side : tile.side;
         const water = id === ID.WATER;
         const sun = water || i === 1 ? 1 : sunShade(world, x, y, z, n);
@@ -1363,7 +2045,7 @@ function terrainMesh(world, cx, cz) {
         });
         const corners = face.corners.map(([vx, vy, vz]) => [x + vx, y + vy - (water ? .12 : 0), z + vz]);
         const turn = i === 0 && (id === ID.GRASS || id === ID.STONE || id === ID.DIRT || id === ID.SAND) ? Math.floor(grain * 4) : 0;
-        mesh.face(corners, art, light, water ? 1 : 0, turn);
+        mesh.face(corners, art, light, water ? 1 : 0, turn, false, glowAt(x+n[0]*.5,y+n[1]*.5,z+n[2]*.5));
       }
     }
   }
@@ -1393,6 +2075,17 @@ function skyClouds() {
         mesh.face(corners.map(([a, b, c]) => [ox + (x + a) * sx, y + b * sy, oz + (z + c) * sz]), TILE.CLOUD, Array(4).fill(light), 2);
       }
     }
+  }
+  mesh.finish();
+  return mesh.pages;
+}
+
+function slimeMesh() {
+  const mesh = new MeshWriter();
+  for (const face of FACES) {
+    const l = face.light;
+    const light = Array(4).fill([l, l * 1.05, l * 1.08]);
+    mesh.face(face.corners.map(([x,y,z]) => [x-.5,y,z-.5]), face.n[1] ? TILE.SLIME_SKIN : TILE.SLIME_FACE, light, 5, 0, false, .25);
   }
   mesh.finish();
   return mesh.pages;
@@ -1429,8 +2122,8 @@ class VoxelRenderer {
     this.gl = gl;
     this.canvas = canvas;
     this.is3D = true;
-    this.blocks = program(gl, GL_VERTEX, GL_FRAGMENT, ['position', 'uv', 'light', 'material'], ['projection', 'atlas', 'eye', 'fogColor', 'fogRange', 'clock']);
-    this.sky = program(gl, SKY_VERTEX, SKY_FRAGMENT, ['position'], ['forward', 'right', 'up', 'lens', 'horizon', 'submerged']);
+    this.blocks = program(gl, GL_VERTEX, GL_FRAGMENT, ['position', 'uv', 'light', 'material', 'glow'], ['projection', 'offset', 'scale', 'atlas', 'eye', 'fogColor', 'fogRange', 'clock', 'daylight', 'lakeTile', 'flash']);
+    this.sky = program(gl, SKY_VERTEX, SKY_FRAGMENT, ['position'], ['forward', 'right', 'up', 'lens', 'horizon', 'submerged', 'daylight']);
     this.line = program(gl, LINE_VERTEX, LINE_FRAGMENT, ['position'], ['projection']);
     this.screen = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.screen);
@@ -1445,6 +2138,7 @@ class VoxelRenderer {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.generateMipmap(gl.TEXTURE_2D);
     this.clouds = this.upload(skyClouds());
+    this.slime = this.upload(slimeMesh());
     this.meshes = new Map();
     this.dirty = new Set();
     this.attributes = [];
@@ -1512,13 +2206,15 @@ class VoxelRenderer {
       gl.vertexAttribPointer(a.uv, 2, gl.FLOAT, false, bytes, 12);
       gl.vertexAttribPointer(a.light, 3, gl.FLOAT, false, bytes, 20);
       gl.vertexAttribPointer(a.material, 1, gl.FLOAT, false, bytes, 32);
+      gl.vertexAttribPointer(a.glow, 1, gl.FLOAT, false, bytes, 36);
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
       gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, 0);
     }
   }
 
-  draw(p, target, now, eco) {
+  draw(p, target, now, eco, survival) {
     const { gl, sky, blocks } = this;
+    const daylight = survival ? daylightAt(survival.clock) : 1;
     this.resize(eco);
     const v = viewOf(p, this.canvas.width / this.canvas.height);
     const water = this.world.get(...v.eye.map(Math.floor)) === ID.WATER;
@@ -1539,14 +2235,21 @@ class VoxelRenderer {
     gl.uniform2fv(sky.uni.lens, v.lens);
     gl.uniform3fv(sky.uni.horizon, HORIZON);
     gl.uniform1f(sky.uni.submerged, water ? 1 : 0);
+    gl.uniform1f(sky.uni.daylight, daylight);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.enable(gl.DEPTH_TEST); gl.enable(gl.CULL_FACE);
     this.use(blocks);
     gl.uniformMatrix4fv(blocks.uni.projection, false, v.matrix);
     gl.uniform3fv(blocks.uni.eye, v.eye);
-    gl.uniform3fv(blocks.uni.fogColor, water ? [.22,.53,.61] : HORIZON);
+    const fog = water ? [.22,.53,.61].map((v) => v * mix(.56,1,daylight)) : HORIZON.map((v,i) => mix(NIGHT_HORIZON[i], v, daylight));
+    gl.uniform3fv(blocks.uni.fogColor, fog);
     gl.uniform2fv(blocks.uni.fogRange, water ? [2,19] : [eco ? 28 : 43, radius]);
     gl.uniform1f(blocks.uni.clock, (now / 1000) % 300);
+    gl.uniform1f(blocks.uni.daylight, daylight);
+    gl.uniform3fv(blocks.uni.lakeTile, [...tileOrigin(TILE.WATER), PIXELS / ATLAS_SIZE]);
+    gl.uniform3f(blocks.uni.offset, 0,0,0);
+    gl.uniform3f(blocks.uni.scale, 1,1,1);
+    gl.uniform1f(blocks.uni.flash, 0);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.texture);
     gl.uniform1i(blocks.uni.atlas, 0);
     this.drawPages(this.clouds, blocks.attr);
@@ -1558,7 +2261,14 @@ class VoxelRenderer {
       if (ahead < -18 || (Math.abs(p.pitch) < .62 && side > Math.max(ahead, 0) * (v.lens[0] + .35) + 21) || Math.hypot(dx,dz) > radius + 13) continue;
       this.drawPages(pages, blocks.attr);
     }
-    if (target) this.drawOutline(target.cell, v.matrix);
+    if (survival) for (const mob of survival.mobs) {
+      const bounce = Math.max(0, Math.sin(survival.clock * 7 + mob.phase));
+      gl.uniform3f(blocks.uni.offset, mob.x, mob.y + bounce*.13, mob.z);
+      gl.uniform3f(blocks.uni.scale, .8 + .06*(1-bounce), .70 + .12*bounce, .8 + .06*(1-bounce));
+      gl.uniform1f(blocks.uni.flash, survival.clock < mob.blink ? .55 : 0);
+      this.drawPages(this.slime, blocks.attr);
+    }
+    if (target?.cell) this.drawOutline(target.cell, v.matrix);
   }
 
   drawOutline([x,y,z], matrix) {
@@ -1588,7 +2298,7 @@ class MapRenderer {
     this.hover = null;
   }
 
-  setWorld(world) { this.world = world; }
+  setWorld(world) { this.world = world; this.hover = null; }
   update() {}
 
   layout(p) {
@@ -1597,18 +2307,18 @@ class MapRenderer {
     return { w, h, tile, ox: Math.round(w * .5 - p.x * tile), oz: Math.round(h * .67 - p.z * tile) };
   }
 
-  pick(p, point = this.hover) {
+  pick(p, point = this.hover, reach = REACH) {
     const { ox, oz, tile } = this.layout(p);
     const x = point ? Math.floor((point[0] - ox) / tile) : Math.floor(p.x + 2 * Math.sin(p.yaw));
     const z = point ? Math.floor((point[1] - oz) / tile) : Math.floor(p.z - 2 * Math.cos(p.yaw));
-    if (x < 0 || z < 0 || x >= SIZE || z >= SIZE || Math.hypot(p.x - x - .5, p.z - z - .5) > REACH) return null;
+    if (x < 0 || z < 0 || x >= SIZE || z >= SIZE || Math.hypot(p.x - x - .5, p.z - z - .5) > reach) return null;
     let y = this.world.tops[x + z * SIZE];
     while (y > 0 && this.world.get(x,y,z) === ID.WATER) y--;
     const id = this.world.get(x,y,z);
     return { cell: [x,y,z], neighbor: [x,isPlant(id) ? y : y + 1,z], id };
   }
 
-  draw(p, target) {
+  draw(p, target, _now, _eco, survival) {
     const { canvas, ctx, world, tiles } = this;
     const { w, h, tile, ox, oz } = this.layout(p);
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
@@ -1634,7 +2344,26 @@ class MapRenderer {
         }
       }
     }
-    if (target) {
+    if (survival) {
+      const dark = (1 - daylightAt(survival.clock)) * .65;
+      if (dark > .005) {
+        ctx.fillStyle = `rgba(13,28,60,${dark})`; ctx.fillRect(0,0,w,h);
+        for (const index of world.torches) {
+          const [x,,z] = coordsOf(index), tx = ox+(x+.5)*tile, tz = oz+(z+.5)*tile, radius = tile*3.5;
+          if (tx < -radius || tz < -radius || tx > w+radius || tz > h+radius) continue;
+          const lamp = ctx.createRadialGradient(tx,tz,0,tx,tz,radius);
+          lamp.addColorStop(0, `rgba(247,174,72,${dark*.95})`); lamp.addColorStop(1,'rgba(247,174,72,0)');
+          ctx.fillStyle = lamp; ctx.fillRect(tx-radius,tz-radius,radius*2,radius*2);
+        }
+      }
+      for (const mob of survival.mobs) {
+        const s = tile * .82, mx = ox + mob.x*tile - s/2, mz = oz + mob.z*tile - s/2;
+        ctx.fillStyle = '#14232b99'; ctx.fillRect(mx+1,mz+4,s,s);
+        ctx.drawImage(tiles[TILE.SLIME_FACE],mx,mz,s,s);
+        if (survival.clock < mob.blink) { ctx.fillStyle = '#ecffe78c'; ctx.fillRect(mx,mz,s,s); }
+      }
+    }
+    if (target?.cell) {
       ctx.lineWidth = 2; ctx.strokeStyle = '#f2ffca';
       ctx.strokeRect(ox + target.cell[0] * tile + 1, oz + target.cell[2] * tile + 1, tile - 2, tile - 2);
     }
@@ -1647,11 +2376,165 @@ class MapRenderer {
   }
 }
 
+const SLOT_COUNT = PALETTE.length;
+const cachedIcons = new Map();
+const inventoryCards = new Map();
+const recipeButtons = [];
+let inventoryTab = 'blocks';
+
+function iconURL(id) {
+  if (!cachedIcons.has(id)) cachedIcons.set(id, resourceIcon(art.tiles, id));
+  return cachedIcons.get(id);
+}
+
+function iconImage(id) {
+  const img = document.createElement('img');
+  img.alt = '';
+  img.draggable = false;
+  if (id) img.src = iconURL(id);
+  return img;
+}
+
+function makeInventory() {
+  for (let i = 0; i < SLOT_COUNT; i++) {
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'slot';
+    const num = document.createElement('span');
+    num.className = 'slot-num'; num.textContent = i + 1; num.setAttribute('aria-hidden', 'true');
+    const count = document.createElement('span');
+    count.className = 'slot-count'; count.hidden = true; count.setAttribute('aria-hidden', 'true');
+    button.append(num, iconImage(0), count);
+    button.addEventListener('click', () => {
+      select(i);
+      if (playing) canvas.focus({ preventScroll: true });
+    });
+    hotbar.append(button);
+  }
+  for (const id of [...CATALOGUE, IT.BERRIES, IT.COAL, IT.WOOD_PICK, IT.STONE_PICK]) {
+    const placeable = CATALOGUE.includes(id);
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'catalogue-item'; button.disabled = !placeable;
+    const label = document.createElement('span'); label.textContent = ITEMS[id].name;
+    const count = document.createElement('span'); count.className = 'slot-count'; count.hidden = true;
+    button.append(iconImage(id), label, count);
+    if (placeable) button.addEventListener('click', () => equip(id));
+    inventoryCards.set(id, { button, count, placeable });
+    $('catalogue-grid').append(button);
+  }
+  for (const recipe of RECIPES) {
+    const [id, count] = recipe.out;
+    const row = document.createElement('div'); row.className = 'recipe-row';
+    const desc = document.createElement('div');
+    const label = document.createElement('strong'); label.textContent = `${ITEMS[id].name}${count > 1 ? ` ×${count}` : ''}`;
+    const requirements = document.createElement('p');
+    requirements.textContent = recipe.using.map(([ids, amount]) => `${amount} × ${Array.isArray(ids) ? 'planches (tout bois)' : ITEMS[ids].name.toLowerCase()}`).join(' + ');
+    desc.append(label, requirements);
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'button';
+    button.addEventListener('click', () => {
+      if (!survival?.craft(recipe)) return;
+      addToHotbar(id);
+      refreshHotbar(); refreshInventory();
+      inventoryMessage(`${ITEMS[id].name}${count > 1 ? ` ×${count}` : ''} fabriqué${count > 1 ? 's' : ''}.`);
+      saveSoon();
+    });
+    recipeButtons.push({ recipe, button });
+    row.append(iconImage(id), desc, button); $('recipe-list').append(row);
+  }
+}
+
+function refreshHotbar() {
+  for (const [i, slot] of Array.from(hotbar.children).entries()) {
+    const id = hotSlots[i], name = id ? ITEMS[id].name : 'Emplacement vide';
+    const qty = survival?.count(id) ?? null;
+    const img = slot.children[1], count = slot.children[2];
+    if (id && img.getAttribute('src') !== iconURL(id)) img.src = iconURL(id);
+    img.hidden = !id;
+    const empty = !id || qty === 0;
+    count.hidden = !id || qty === null;
+    if (qty !== null) count.textContent = qty;
+    slot.classList.toggle('is-empty', empty);
+    slot.title = `${i + 1} · ${name}${qty !== null && id ? ` (${qty})` : ''}`;
+    slot.setAttribute('aria-label', slot.title);
+    slot.setAttribute('aria-pressed', String(i === selection));
+  }
+  const selected = hotSlots[selection];
+  $('block-caption').textContent = selected ? ITEMS[selected].name : survival?.tool ? ITEMS[survival.tool].name : 'Mains nues';
+  $('active-slot').textContent = `Emplacement ${selection + 1} sur ${SLOT_COUNT}`;
+}
+
+function select(i, save = true) {
+  selection = (i + SLOT_COUNT) % SLOT_COUNT;
+  refreshHotbar();
+  if (save) saveSoon();
+}
+
+function addToHotbar(id) {
+  if (!CATALOGUE.includes(id) || hotSlots.includes(id)) return;
+  let slot = hotSlots.indexOf(ID.AIR);
+  if (slot < 0 && survival) slot = hotSlots.findIndex((item) => !survival.count(item));
+  if (slot < 0) return;
+  if (!hotSlots[selection] || (survival && !survival.count(hotSlots[selection]))) selection = slot;
+  hotSlots[slot] = id;
+}
+
+function inventoryMessage(text) { $('inventory-status').textContent = text; }
+function equip(id) {
+  if (!CATALOGUE.includes(id) || (survival && !survival.count(id))) return;
+  const old = hotSlots.indexOf(id);
+  if (old >= 0 && old !== selection) hotSlots[old] = hotSlots[selection];
+  hotSlots[selection] = id;
+  refreshHotbar(); refreshInventory();
+  inventoryMessage(`${ITEMS[id].name} → touche ${selection + 1}`);
+  saveSoon();
+}
+
+const searchName = (text) => text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+function refreshInventory() {
+  const inSurvival = Boolean(survival);
+  $('inventory-tabs').hidden = !inSurvival;
+  $('survival-kit').hidden = !inSurvival;
+  const crafting = inSurvival && inventoryTab === 'craft';
+  $('blocks-tab').hidden = crafting;
+  $('craft-tab').hidden = !crafting;
+  for (const button of $('inventory-tabs').querySelectorAll('button')) button.setAttribute('aria-pressed', String(button.dataset.tab === inventoryTab));
+  if (survival) {
+    const berries = survival.count(IT.BERRIES), tool = survival.tool;
+    $('tool-img').hidden = !tool;
+    if (tool) $('tool-img').src = iconURL(tool);
+    $('tool-name').textContent = tool ? ITEMS[tool].name : 'Mains nues';
+    $('eat-text').textContent = `Manger · ${berries} baie${berries === 1 ? '' : 's'}`;
+    $('eat').disabled = survival.dead || berries === 0 || survival.food >= MAX_VITAL - .15;
+    $('eat').title = !berries ? 'Récolte des baies sur un buisson.' : survival.food >= MAX_VITAL - .15 ? 'Tu n’as pas faim.' : 'Restaure 5 points de nourriture';
+    for (const { recipe, button } of recipeButtons) {
+      button.disabled = !survival.canCraft(recipe);
+      const owned = recipe.unique && survival.count(recipe.out[0]);
+      button.textContent = owned ? 'Possédée' : 'Fabriquer';
+      button.setAttribute('aria-label', `${owned ? 'Possédée' : 'Fabriquer'} : ${ITEMS[recipe.out[0]].name}`);
+    }
+  }
+  $('catalogue-title').textContent = inSurvival ? 'Matériaux récoltés' : `${CATALOGUE.length} blocs et décorations`;
+  const hint = `Clique sur un bloc pour l’assigner à la touche ${selection + 1}.`;
+  $('catalogue-copy').textContent = inSurvival ? `${hint} Récolte d’abord tes matériaux.` : hint;
+  const query = searchName($('block-search').value.trim());
+  let visible = 0;
+  for (const [id, { button, count, placeable }] of inventoryCards) {
+    const qty = survival?.count(id) ?? 0;
+    button.hidden = (inSurvival ? !qty : !placeable) || !searchName(ITEMS[id].name).includes(query);
+    if (!button.hidden) visible++;
+    count.textContent = qty;
+    count.hidden = !inSurvival;
+    if (placeable) button.setAttribute('aria-pressed', String(id === hotSlots[selection]));
+  }
+  $('catalogue-empty').hidden = visible > 0;
+  $('catalogue-empty').textContent = query ? 'Aucun matériau ne correspond à cette recherche.' : 'Ton sac est vide. Maintiens le clic gauche sur un bloc pour le récolter.';
+}
+
 const $ = (id) => document.getElementById(id);
 const card = $('game-card'), viewport = $('viewport'), hotbar = $('hotbar');
 const play = $('play'), guide = $('guide-dialog'), worldDialog = $('world-dialog');
 const eco = $('eco'), seedInput = $('seed-input');
-const STORAGE = 'minestart:1';
+const inventoryDialog = $('inventory-dialog');
+const STORAGE = 'minestart:2', LEGACY_STORAGE = 'minestart:1';
 const safeSeed = (value) => Number.isInteger(value) && value >= 0 && value < 1000000;
 const keys = new Set();
 const touchKeys = new Set();
@@ -1662,34 +2545,48 @@ let renderer;
 let storageOK = true;
 let saveTimer = 0;
 let toastTimer = 0;
-let player, world, selection = 0;
+let player, world, survival, selection = 0, hotSlots = [...PALETTE];
+let mode = GAME_MODE.CREATIVE, savedWorlds = {};
+let miningPointer = null, mineKey = '', mineWork = 0;
+let lastVitals = '', lastClock = '', lastLight = -1, lastWorldDraw = 0, lastCheckpoint = 0;
 let playing = false, started = false, pointerCaptured = false, drag = null, usingTouch = coarse.matches;
 let lastSpace = -Infinity, lockTime = 0;
 let frameRequest = 0, lastFrame = 0, forceDraw = true;
 let lastPosition = '', renderedPose = [], renderedTarget = '';
 
-function readSave() {
-  try {
-    const data = JSON.parse(localStorage.getItem(STORAGE));
-    return data && safeSeed(data.seed) ? data : {};
-  } catch (error) {
+function fromStorage(key) {
+  try { return JSON.parse(localStorage.getItem(key)); }
+  catch (error) {
     if (error.name !== 'SyntaxError') storageOK = false;
-    return {};
+    return null;
   }
+}
+
+function readSave() {
+  const data = fromStorage(STORAGE);
+  if (data && typeof data.worlds === 'object' && data.worlds) {
+    const worlds = {};
+    for (const name of Object.values(GAME_MODE)) if (safeSeed(data.worlds[name]?.seed)) worlds[name] = data.worlds[name];
+    return { mode: data.mode === GAME_MODE.SURVIVAL ? GAME_MODE.SURVIVAL : GAME_MODE.CREATIVE, worlds, eco: data.eco };
+  }
+  const old = storageOK ? fromStorage(LEGACY_STORAGE) : null;
+  if (old && safeSeed(old.seed)) return { mode: GAME_MODE.CREATIVE, worlds: { creative: { ...old, generation: 1 } }, eco: old.eco };
+  return { mode: GAME_MODE.CREATIVE, worlds: {} };
 }
 
 function showStorage() {
   $('save-status').classList.toggle('is-unavailable', !storageOK);
   $('save-text').textContent = storageOK ? 'Sauvegarde locale' : 'Sauvegarde indisponible';
-  $('save-status').title = storageOK ? 'Les constructions sont conservées dans ce navigateur.' : 'Ce navigateur ne permet pas de sauvegarder sur cet appareil.';
+  $('save-status').title = storageOK ? 'Chaque mode a sa propre sauvegarde sur cet appareil.' : 'Ce navigateur ne permet pas de sauvegarder sur cet appareil.';
 }
 
 function persist() {
   clearTimeout(saveTimer); saveTimer = 0;
-  if (!world || !player || !storageOK) return;
-  try {
-    const { x, y, z, yaw, pitch, flying } = player;
-    localStorage.setItem(STORAGE, JSON.stringify({ seed: world.seed, edits: Array.from(world.edits), player: { x, y, z, yaw, pitch, flying }, selection, eco: eco.checked }));
+  if (!world || !player) return;
+  const { x, y, z, yaw, pitch, flying } = player;
+  savedWorlds[mode] = { seed: world.seed, generation: world.generation, edits: Array.from(world.edits), player: { x, y, z, yaw, pitch, flying }, selection, hotbar: [...hotSlots], survival: survival?.snapshot() };
+  if (!storageOK) return;
+  try { localStorage.setItem(STORAGE, JSON.stringify({ mode, worlds: savedWorlds, eco: eco.checked }));
   } catch {
     storageOK = false;
     showStorage();
@@ -1712,62 +2609,101 @@ function restorePlayer(map, saved) {
   if (!saved || !['x', 'y', 'z', 'yaw', 'pitch'].every((id) => Number.isFinite(saved[id]))) return map.spawn();
   const { x, y, z } = saved;
   if (collides(map, playerBox(x, y, z))) return map.spawn();
-  return { x, y, z, yaw: saved.yaw % (Math.PI * 2), pitch: clamp(saved.pitch, -1.54, 1.54), vy: 0, grounded: false, flying: renderer.is3D && saved.flying === true };
+  return { x, y, z, yaw: saved.yaw % (Math.PI * 2), pitch: clamp(saved.pitch, -1.54, 1.54), vy: 0, grounded: false, flying: !survival && renderer.is3D && saved.flying === true };
 }
 
 function openWorld(seed, data = {}) {
-  world = new World(seed, data.edits);
+  world = new World(seed, data.edits, data.generation === 1 && mode === GAME_MODE.CREATIVE ? 1 : WORLD_GENERATION);
+  survival = mode === GAME_MODE.SURVIVAL ? new Survival(data.survival) : null;
   player = restorePlayer(world, data.player);
+  hotSlots = Array.isArray(data.hotbar) && data.hotbar.length === SLOT_COUNT
+    ? data.hotbar.map((id) => CATALOGUE.includes(id) ? id : ID.AIR)
+    : survival ? Array(SLOT_COUNT).fill(ID.AIR) : [...PALETTE];
+  if (!survival) hotSlots = hotSlots.map((id, i) => id || PALETTE[i]);
+  selection = Number.isInteger(data.selection) && data.selection >= 0 && data.selection < SLOT_COUNT ? data.selection : 0;
   lastSpace = -Infinity;
+  lastCheckpoint = survival?.clock ?? 0;
   renderer.setWorld(world);
   $('world-name').textContent = worldName(seed);
   $('world-seed').textContent = String(seed).padStart(6, '0');
-  lastPosition = '';
+  lastPosition = lastVitals = lastClock = '';
+  lastLight = -1;
+  endMining();
+  refreshHotbar();
   updateUI();
   invalidate();
 }
 
-function makeInventory() {
-  for (const [i, id] of PALETTE.entries()) {
-    const button = document.createElement('button');
-    const num = document.createElement('span');
-    const img = document.createElement('img');
-    const name = BLOCKS[id].name;
-    button.type = 'button'; button.className = 'slot';
-    button.title = `${i + 1} · ${name}`;
-    button.setAttribute('aria-label', `${i + 1} : ${name}`);
-    num.className = 'slot-num'; num.textContent = i + 1; num.setAttribute('aria-hidden', 'true');
-    img.src = blockIcon(art.tiles, id); img.alt = ''; img.draggable = false;
-    button.append(num, img);
-    button.addEventListener('click', () => {
-      select(i);
-      if (playing) canvas.focus({ preventScroll: true });
-    });
-    hotbar.append(button);
+function changeMode(next) {
+  if (mode === next || !Object.values(GAME_MODE).includes(next)) return;
+  pauseGame();
+  persist();
+  mode = next;
+  started = false;
+  const saved = savedWorlds[mode];
+  openWorld(saved?.seed ?? DEFAULT_SEED, saved);
+  persist();
+}
+
+function makeVitals() {
+  for (const [id, symbol] of [['health', 'heart'], ['food', 'food']]) {
+    for (let i = 0; i < 10; i++) {
+      const unit = document.createElement('span');
+      unit.className = 'vital-unit'; unit.setAttribute('aria-hidden', 'true');
+      unit.innerHTML = `<svg class="empty-vital"><use href="#i-${symbol}-pixel"/></svg><svg class="fill-vital"><use href="#i-${symbol}-pixel"/></svg>`;
+      $(id).append(unit);
+    }
   }
 }
 
-function select(i, save = true) {
-  selection = (i + PALETTE.length) % PALETTE.length;
-  for (const [n, slot] of Array.from(hotbar.children).entries()) slot.setAttribute('aria-pressed', String(n === selection));
-  $('block-caption').textContent = BLOCKS[PALETTE[selection]].name;
-  if (save) saveSoon();
+function updateVitals() {
+  if (!survival) return;
+  const health = Math.ceil(survival.health), food = Math.ceil(survival.food), air = Math.ceil(survival.air);
+  const stamp = `${health}:${food}:${Math.floor(survival.air * 10)}`;
+  if (lastVitals !== stamp) {
+    for (const [id, label, value] of [['health', 'Vie', health], ['food', 'Nourriture', food]]) {
+      $(id).setAttribute('aria-label', `${label} : ${value} sur 20`);
+      $(id).title = `${label} : ${value}/20`;
+      for (let i = 0; i < 10; i++) $(id).children[i].style.setProperty('--cutoff', `${100 - clamp(value - i*2, 0, 2)*50}%`);
+    }
+    $('air-meter').hidden = survival.air >= MAX_AIR;
+    $('air-meter').setAttribute('aria-valuenow', air);
+    $('air-meter').style.setProperty('--percent', `${survival.air * 100 / MAX_AIR}%`);
+    lastVitals = stamp;
+  }
+  const time = clockLabel(survival.clock);
+  if (time !== lastClock) {
+    $('clock-text').textContent = time;
+    $('clock-icon').setAttribute('href', survival.night ? '#i-moon' : '#i-sun');
+    $('world-clock').classList.toggle('is-night', survival.night);
+    lastClock = time;
+  }
 }
 
 function updateUI() {
-  const map = !renderer.is3D;
+  const map = !renderer.is3D, dead = survival?.dead;
+  viewport.classList.toggle('is-survival', Boolean(survival));
+  viewport.classList.toggle('is-dead', Boolean(dead));
+  $('vitals').hidden = !survival;
+  $('world-clock').hidden = !survival;
+  updateVitals();
+  for (const button of document.querySelectorAll('[data-mode]')) button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+  $('mode-help').textContent = survival ? 'Récolte, fabrique et tiens jusqu’à l’aube.' : 'Blocs illimités, construction libre.';
+  $('mine-command').textContent = survival ? 'Maintenir gauche' : 'Clic gauche';
+  $('guide-mine').textContent = survival ? 'Maintenir clic gauche / clic droit' : 'Clic gauche / droit';
+  $('guide-berries').hidden = $('guide-eat').hidden = !survival;
   card.classList.toggle('is-playing', playing);
   viewport.classList.toggle('drag-look', playing && !map && !pointerCaptured);
   $('ready').classList.toggle('is-playing', playing);
-  $('ready-text').textContent = playing ? 'Partie en cours' : started ? 'En pause' : 'Prêt à jouer';
+  $('ready-text').textContent = dead ? 'À réapparaître' : playing ? 'Partie en cours' : started ? 'En pause' : 'Prêt à jouer';
   $('view-label').textContent = map ? 'Vue du monde · 2D' : 'Vue du monde';
-  $('game-tag').lastChild.nodeValue = map ? ' VUE 2D' : player?.flying ? ' EN VOL' : ' CRÉATIF';
+  $('game-mode').textContent = `${survival ? 'SURVIE' : player?.flying ? 'EN VOL' : 'CRÉATIF'}${map ? ' · 2D' : ''}`;
   viewport.querySelector('.reticle').hidden = map;
   $('pause').hidden = !playing;
   $('touch-controls').hidden = !(playing && usingTouch);
   $('start-layer').hidden = playing;
-  $('play-label').textContent = started ? 'Reprendre' : 'Jouer';
-  $('play-hint').textContent = map ? 'Vue 2D · Vise les blocs avec le curseur' : started ? 'Retour dans ton monde' : usingTouch ? 'Touche pour entrer dans le monde' : 'Clique pour entrer dans le monde';
+  $('play-label').textContent = dead ? 'Réapparaître' : started ? 'Reprendre' : 'Jouer';
+  $('play-hint').textContent = dead ? `${survival.why || 'Tu as perdu ta vie.'} Ton sac est conservé.` : map ? 'Vue 2D · Vise les blocs avec le curseur' : started ? 'Retour dans ton monde' : survival ? 'Récolte du bois pour fabriquer une pioche.' : usingTouch ? 'Touche pour entrer dans le monde' : 'Clique pour entrer dans le monde';
   const hint = $('footer-hint');
   if (usingTouch) hint.textContent = map ? 'Touche un bloc pour le viser' : 'Glisse pour regarder';
   else {
@@ -1775,7 +2711,8 @@ function updateUI() {
     hint.replaceChildren(kbd, document.createTextNode(map || (playing && !pointerCaptured) ? ' Mettre en pause' : ' Libérer la souris'));
   }
   $('guide-copy').textContent = map ? 'WebGL est indisponible. En vue 2D, vise un bloc à proximité avec le curseur.' : 'Vise un bloc avec la croix au centre de l’écran. Si la souris n’est pas capturée, glisse sur la vue ou utilise les flèches.';
-  for (const id of ['guide-look', 'guide-fly', 'guide-fly-move', 'eco-option']) $(id).hidden = map;
+  for (const id of ['guide-look', 'eco-option']) $(id).hidden = map;
+  for (const id of ['guide-fly', 'guide-fly-move']) $(id).hidden = map || Boolean(survival);
 }
 
 function updateCoordinates() {
@@ -1801,7 +2738,7 @@ function directionInputs(dt) {
     if (turn || tilt) rotate(turn * dt * 1.35, tilt * dt * 1.22);
   }
   const shift = active('ShiftLeft', 'ShiftRight');
-  return { side: Number(right) - Number(left), forward: Number(forward) - Number(back), up: active('Space', 'jump'), down: shift, sprint: shift };
+  return { side: Number(right) - Number(left), forward: Number(forward) - Number(back), up: active('Space', 'jump'), down: shift, sprint: shift && (!survival || survival.food >= 3) };
 }
 
 function invalidate() {
@@ -1809,10 +2746,29 @@ function invalidate() {
   if (!frameRequest) frameRequest = requestAnimationFrame(frame);
 }
 
-function currentTarget(point) {
-  if (!renderer.is3D) return renderer.pick(player, point);
-  const eye = [player.x, player.y + EYE, player.z];
-  return raycast(world, eye, lookDirection(player));
+function currentTarget(point, includeMobs = true) {
+  const reach = survival ? SURVIVAL_REACH : REACH;
+  if (!renderer.is3D) {
+    const cursor = point ?? renderer.hover;
+    if (survival && cursor && includeMobs) {
+      const { ox, oz, tile } = renderer.layout(player);
+      const [x, z] = [(cursor[0] - ox) / tile, (cursor[1] - oz) / tile];
+      const mob = survival.mobs.find((m) => Math.hypot(m.x - x, m.z - z) <= .55 && Math.hypot(m.x - player.x, m.z - player.z) <= 3.5);
+      if (mob) return { mob };
+    }
+    return renderer.pick(player, cursor, reach);
+  }
+  const eye = [player.x, player.y + EYE, player.z], direction = lookDirection(player);
+  const block = raycast(world, eye, direction, reach);
+  if (survival && includeMobs) {
+    let closest = Math.min(3.5, block?.distance ?? 3.5), aimed = null;
+    for (const mob of survival.mobs) {
+      const d = rayBox(eye, direction, slimeBox(mob.x, mob.y, mob.z), closest);
+      if (d < closest) { closest = d; aimed = mob; }
+    }
+    if (aimed) return { mob: aimed };
+  }
+  return block;
 }
 
 function frame(now) {
@@ -1824,20 +2780,39 @@ function frame(now) {
     return;
   }
   lastFrame = now;
+  let dt = 0;
   if (playing && elapsed > 0) {
-    const dt = Math.min(elapsed / 1000, .09);
+    dt = Math.min(elapsed / 1000, .09);
     const parts = Math.max(1, Math.ceil(dt / .011));
     const axes = directionInputs(dt);
     for (let i = 0; i < parts; i++) advance(world, player, axes, dt / parts);
+    if (survival) {
+      const previous = survival.damageCount;
+      survival.step(world, player, axes, dt, updateTerrain);
+      updateVitals();
+      if (survival.damageCount !== previous) {
+        const flash = $('damage-flash');
+        flash.classList.remove('is-hit'); void flash.offsetWidth; flash.classList.add('is-hit');
+        if (survival.dead) pauseGame();
+        else { announce(survival.why); saveSoon(); }
+      }
+      if (survival.clock - lastCheckpoint >= 12) { lastCheckpoint = survival.clock; persist(); }
+    }
   }
   const hit = playing ? currentTarget() : null;
+  if (playing && survival && miningPointer !== null) dig(hit, dt);
+  viewport.classList.toggle('aimed-mob', Boolean(hit?.mob));
   const pose = [player.x, player.y, player.z, player.yaw, player.pitch];
-  const target = hit?.cell.join(',') ?? '';
-  // A stationary view does not need to redraw, even with the game unpaused.
-  if (forceDraw || target !== renderedTarget || pose.some((v, i) => Math.abs(v - renderedPose[i]) > .0001)) {
-    renderer.draw(player, hit, now, eco.checked);
+  const target = hit?.cell?.join(',') ?? hit?.mob?.id ?? '';
+  const light = survival ? Math.round(daylightAt(survival.clock) * 100) : 100;
+  const animated = playing && survival?.mobs.length && now - lastWorldDraw > (eco.checked || !renderer.is3D ? 80 : 64);
+  // Stay idle while the camera, weather and creatures are still.
+  if (forceDraw || animated || light !== lastLight || target !== renderedTarget || pose.some((v, i) => Math.abs(v - renderedPose[i]) > .0001)) {
+    renderer.draw(player, hit, now, eco.checked, survival);
     renderedPose = pose;
     renderedTarget = target;
+    lastLight = light;
+    lastWorldDraw = now;
     updateCoordinates();
   }
   forceDraw = false;
@@ -1857,7 +2832,11 @@ function usingDrag() {
 }
 
 function startGame() {
-  if (playing || play.disabled || guide.open || worldDialog.open) return;
+  if (playing || play.disabled || guide.open || worldDialog.open || inventoryDialog.open) return;
+  if (survival?.dead) {
+    survival.respawn(); player = world.spawn(); lastVitals = '';
+    persist();
+  }
   started = true;
   playing = true;
   lastFrame = performance.now();
@@ -1877,7 +2856,7 @@ function pauseGame() {
   if (!playing) return;
   playing = false;
   pointerCaptured = false;
-  keys.clear(); touchKeys.clear(); drag = null;
+  keys.clear(); touchKeys.clear(); drag = null; endMining();
   if (document.pointerLockElement === canvas) document.exitPointerLock();
   clearTimeout(toastTimer); $('toast').hidden = true;
   updateUI();
@@ -1885,19 +2864,96 @@ function pauseGame() {
   invalidate();
 }
 
-function editBlock(place, point) {
-  if (!playing) return;
-  const hit = currentTarget(point);
-  if (!hit) { announce('Approche-toi d’un bloc pour le modifier.'); return; }
-  const cell = place ? hit.neighbor : hit.cell;
-  if (!cell || !inside(...cell)) return;
-  const [x,y,z] = cell;
-  if (place && (solid(world.get(x,y,z)) || intersectsPlayer(player, x,y,z))) return;
-  if (!place && hit.id === ID.BEDROCK) { announce('La roche mère ne peut pas être cassée.'); return; }
-  if (!world.set(x,y,z,place ? PALETTE[selection] : ID.AIR)) return;
+function updateTerrain(x, z) {
   renderer.update(x, z);
   saveSoon();
   invalidate();
+}
+
+function editBlock(place, point) {
+  if (!playing) return;
+  const hit = currentTarget(point, false);
+  if (!hit) { announce('Approche-toi d’un bloc pour le modifier.'); return; }
+  if (place && survival && hit.id === ID.BERRY_BUSH) {
+    const got = survival.harvest(world, hit.cell);
+    if (got) {
+      announce(`+${got} baies · F pour manger`);
+      updateTerrain(hit.cell[0], hit.cell[2]);
+    } else announce('Tu ne peux pas ramasser plus de baies.');
+    return;
+  }
+  const cell = place ? hit.neighbor : hit.cell;
+  if (!cell || !inside(...cell)) return;
+  const [x,y,z] = cell;
+  const id = place ? hotSlots[selection] : ID.AIR;
+  if (place) {
+    if (!id || (survival && !survival.count(id))) { announce('Ton emplacement est vide. Récolte des blocs ou ouvre l’inventaire (E).'); return; }
+    if (solid(world.get(x,y,z)) || intersectsPlayer(player,x,y,z)) return;
+    if (isPlant(id) && !solid(world.get(x,y-1,z))) { announce('Pose cette décoration sur un bloc solide.'); return; }
+  }
+  if (!place && hit.id === ID.BEDROCK) { announce('La roche mère ne peut pas être cassée.'); return; }
+  if (!world.set(x,y,z,id)) return;
+  if (place && survival) { survival.spend(id); refreshHotbar(); }
+  updateTerrain(x,z);
+}
+
+function endMining() {
+  miningPointer = null;
+  mineKey = ''; mineWork = 0;
+  $('mine-meter').hidden = true;
+}
+
+function beginBreak(pointer, point) {
+  if (!playing) return;
+  if (!survival) { editBlock(false, point); return; }
+  endMining();
+  const target = currentTarget(point);
+  if (target?.mob) {
+    const message = survival.strike(target.mob);
+    if (message) { announce(message); saveSoon(); invalidate(); }
+    return;
+  }
+  if (!target) announce('Approche-toi et vise un bloc.');
+  miningPointer = pointer;
+}
+
+function dig(hit, dt) {
+  const key = hit?.cell ? `${hit.cell.join(',')}:${hit.id}` : '';
+  const meter = $('mine-meter');
+  const fresh = key !== mineKey;
+  if (fresh) { mineKey = key; mineWork = 0; }
+  if (!key) { meter.hidden = true; return; }
+  const rule = mineRule(hit.id, survival.tool);
+  if (!rule.seconds) {
+    meter.hidden = true;
+    if (fresh) announce(rule.hint);
+    return;
+  }
+  mineWork += dt;
+  meter.hidden = false;
+  meter.style.setProperty('--percent', `${clamp(mineWork / rule.seconds,0,1)*100}%`);
+  if (mineWork < rule.seconds) return;
+  if (world.set(...hit.cell, ID.AIR)) {
+    const id = blockDrop(hit.id);
+    const qty = survival.add(id);
+    if (qty) {
+      addToHotbar(id);
+      announce(`${ITEMS[id].name} +${qty}`, 1150);
+    }
+    survival.food = Math.max(0, survival.food - .10);
+    refreshHotbar();
+    updateTerrain(hit.cell[0], hit.cell[2]);
+  }
+  mineWork = 0; mineKey = ''; meter.hidden = true;
+}
+
+function eatBerries() {
+  if (!survival) return;
+  const ok = survival.eat();
+  const text = ok ? 'Tu as mangé une baie · +5 nourriture' : survival.count(IT.BERRIES) ? 'Tu n’as pas faim.' : 'Récolte des baies avec un clic droit sur un buisson.';
+  if (inventoryDialog.open) { refreshInventory(); inventoryMessage(text); }
+  else announce(text);
+  if (ok) { updateVitals(); saveSoon(); }
 }
 
 function canvasPoint(e) {
@@ -1916,18 +2972,23 @@ function connectCanvas() {
     announce('Affichage 3D indisponible. Le jeu continue en 2D.', 4000);
   }, { once: true });
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-  canvas.addEventListener('click', () => { if (!playing) startGame(); });
+  canvas.addEventListener('click', () => { if (!playing && !survival?.dead) startGame(); });
   canvas.addEventListener('pointerdown', (e) => {
-    if (!playing || e.button > 2 || e.button === 1) return;
+    if (!playing || (e.button !== 0 && e.button !== 2)) return;
     e.preventDefault();
     if (!renderer.is3D) {
       renderer.hover = canvasPoint(e);
-      if (e.pointerType !== 'touch') editBlock(e.button === 2, renderer.hover);
+      if (e.pointerType !== 'touch') {
+        if (e.button === 2) editBlock(true, renderer.hover);
+        else beginBreak(e.pointerId, renderer.hover);
+      }
       return;
     }
-    if (pointerCaptured || e.button === 2) { editBlock(e.button === 2); return; }
+    if (e.button === 2) { editBlock(true); return; }
+    if (pointerCaptured) { beginBreak(e.pointerId); return; }
     drag = { id: e.pointerId, x: e.clientX, y: e.clientY, distance: 0, touch: e.pointerType === 'touch' };
     canvas.setPointerCapture?.(e.pointerId);
+    if (survival && !drag.touch) beginBreak(e.pointerId);
   });
   canvas.addEventListener('pointermove', (e) => {
     if (!playing) return;
@@ -1935,15 +2996,23 @@ function connectCanvas() {
     if (pointerCaptured || drag?.id !== e.pointerId) return;
     const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     drag.x = e.clientX; drag.y = e.clientY; drag.distance += Math.abs(dx) + Math.abs(dy);
-    if (drag.distance >= 3) rotate(dx * .0053, -dy * .0053);
+    if (drag.distance >= 4) {
+      if (miningPointer === e.pointerId) endMining();
+      rotate(dx * .0053, -dy * .0053);
+    }
   });
   canvas.addEventListener('pointerup', (e) => {
     if (drag?.id !== e.pointerId) return;
-    if (playing && drag.distance < 5 && !drag.touch) editBlock(false);
+    if (playing && !survival && drag.distance < 5 && !drag.touch) editBlock(false);
     drag = null;
   });
-  for (const event of ['pointercancel', 'lostpointercapture']) canvas.addEventListener(event, () => { drag = null; });
-  canvas.addEventListener('pointerleave', () => { if (!renderer.is3D && !usingTouch) renderer.hover = null; });
+  for (const event of ['pointercancel', 'lostpointercapture']) canvas.addEventListener(event, (e) => {
+    if (miningPointer === e.pointerId) endMining();
+    if (drag?.id === e.pointerId) drag = null;
+  });
+  canvas.addEventListener('pointerleave', () => {
+    if (!renderer.is3D && !usingTouch) { renderer.hover = null; if (miningPointer !== null) endMining(); }
+  });
 }
 
 function useMap() {
@@ -1957,7 +3026,9 @@ function useMap() {
 function setFullscreenLabel() {
   const on = document.fullscreenElement === card || card.classList.contains('theater');
   $('fullscreen').setAttribute('aria-pressed', String(on));
-  $('fullscreen-label').textContent = on ? 'Quitter le plein écran' : 'Plein écran';
+  const label = on ? 'Quitter le plein écran' : 'Plein écran';
+  $('fullscreen-label').textContent = label;
+  $('fullscreen').setAttribute('aria-label', label);
   $('fullscreen-icon').setAttribute('href', on ? '#i-contract' : '#i-expand');
   invalidate();
 }
@@ -1982,6 +3053,15 @@ function openDialog(dialog) {
   dialog.showModal();
 }
 
+function openInventory() {
+  if (inventoryDialog.open || guide.open || worldDialog.open) return;
+  inventoryTab = 'blocks';
+  $('block-search').value = '';
+  inventoryMessage('');
+  refreshInventory();
+  openDialog(inventoryDialog);
+}
+
 function randomSeed() {
   let seed;
   do { seed = Math.floor(Math.random() * 1000000); } while (seed === world.seed || seed === Number(seedInput.value));
@@ -1992,9 +3072,12 @@ try { renderer = new VoxelRenderer(canvas, art); connectCanvas(); }
 catch { useMap(); }
 const saved = readSave();
 eco.checked = saved.eco === true;
+mode = saved.mode;
+savedWorlds = saved.worlds;
 makeInventory();
-select(Number.isInteger(saved.selection) && saved.selection >= 0 && saved.selection < PALETTE.length ? saved.selection : 0, false);
-openWorld(saved.seed ?? DEFAULT_SEED, saved);
+makeVitals();
+const initial = savedWorlds[mode];
+openWorld(initial?.seed ?? DEFAULT_SEED, initial);
 showStorage();
 play.disabled = false;
 if (location.protocol === 'file:') $('download').href = location.href.split('#')[0];
@@ -2004,7 +3087,18 @@ $('pause').addEventListener('click', pauseGame);
 $('fullscreen').addEventListener('click', toggleFullscreen);
 document.addEventListener('fullscreenchange', setFullscreenLabel);
 $('open-guide').addEventListener('click', () => openDialog(guide));
-$('new-world').addEventListener('click', () => { randomSeed(); openDialog(worldDialog); });
+$('open-inventory').addEventListener('click', openInventory);
+$('block-search').addEventListener('input', refreshInventory);
+$('eat').addEventListener('click', eatBerries);
+for (const button of document.querySelectorAll('[data-mode]')) button.addEventListener('click', () => changeMode(button.dataset.mode));
+for (const button of $('inventory-tabs').querySelectorAll('button')) button.addEventListener('click', () => {
+  inventoryTab = button.dataset.tab;
+  refreshInventory();
+});
+$('new-world').addEventListener('click', () => {
+  $('world-warning').textContent = `Ce nouveau monde remplacera uniquement la partie ${survival ? 'Survie' : 'Créatif'} et ses constructions.`;
+  randomSeed(); openDialog(worldDialog);
+});
 $('cancel-world').addEventListener('click', () => worldDialog.close());
 $('random-seed').addEventListener('click', randomSeed);
 $('world-form').addEventListener('submit', (e) => {
@@ -2021,20 +3115,30 @@ eco.addEventListener('change', () => { persist(); invalidate(); });
 
 window.addEventListener('keydown', (e) => {
   if (guide.open || worldDialog.open || e.ctrlKey || e.metaKey || e.altKey) return;
+  const code = keyboardCode(e);
+  const writing = e.target instanceof HTMLInputElement || e.target.isContentEditable;
+  if (!writing && !e.repeat && code === 'KeyE') {
+    e.preventDefault();
+    if (inventoryDialog.open) inventoryDialog.close(); else openInventory();
+    return;
+  }
+  if (!writing && !e.repeat && code === 'KeyF' && survival && !survival.dead && (playing || inventoryDialog.open)) {
+    e.preventDefault(); eatBerries(); return;
+  }
+  if (inventoryDialog.open) return;
   if (e.key === 'Escape') {
     if (playing) { e.preventDefault(); pauseGame(); }
     else if (card.classList.contains('theater')) toggleFullscreen();
     return;
   }
   if (!playing) return;
-  const code = keyboardCode(e);
   if (/^(Digit|Numpad)[1-8]$/.test(code) || /^[1-8]$/.test(e.key)) {
     e.preventDefault(); select(Number(/^[1-8]$/.test(e.key) ? e.key : code.at(-1)) - 1); return;
   }
   if (!/^(Key[WZQASD]|Arrow(Left|Up|Down|Right)|Space|Shift(Left|Right))$/.test(code)) return;
   e.preventDefault();
   keys.add(code);
-  if (code === 'Space' && !e.repeat && renderer.is3D) {
+  if (code === 'Space' && !e.repeat && renderer.is3D && !survival) {
     if (performance.now() - lastSpace < 285) {
       player.flying = !player.flying;
       player.vy = 0;
@@ -2047,7 +3151,7 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('keyup', (e) => keys.delete(keyboardCode(e)));
 function keyboardCode(e) {
   if (e.code && e.code !== 'Unidentified') return e.code;
-  if (/^[wzqasd]$/i.test(e.key)) return `Key${e.key.toUpperCase()}`;
+  if (/^[wzqasdef]$/i.test(e.key)) return `Key${e.key.toUpperCase()}`;
   return e.key === ' ' ? 'Space' : e.key === 'Shift' ? 'ShiftLeft' : e.key;
 }
 
@@ -2082,11 +3186,20 @@ for (const button of viewport.querySelectorAll('[data-move], [data-act="jump"]')
   });
   for (const event of ['pointerup','pointercancel','lostpointercapture']) button.addEventListener(event, () => touchKeys.delete(move));
 }
-for (const button of viewport.querySelectorAll('[data-act="break"], [data-act="place"]')) {
-  button.addEventListener('click', () => editBlock(button.dataset.act === 'place'));
-}
+const touchBreak = viewport.querySelector('[data-act="break"]');
+touchBreak.addEventListener('pointerdown', (e) => {
+  if (!survival) return;
+  e.preventDefault();
+  touchBreak.setPointerCapture?.(e.pointerId);
+  beginBreak(e.pointerId);
+});
+touchBreak.addEventListener('click', () => { if (!survival) editBlock(false); });
+viewport.querySelector('[data-act="place"]').addEventListener('click', () => editBlock(true));
+for (const event of ['pointerup', 'pointercancel']) window.addEventListener(event, (e) => {
+  if (e.pointerId === miningPointer && (event === 'pointercancel' || e.button === 0)) endMining();
+});
 
-window.addEventListener('blur', () => { keys.clear(); touchKeys.clear(); });
+window.addEventListener('blur', () => { keys.clear(); touchKeys.clear(); endMining(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) pauseGame(); });
 window.addEventListener('pagehide', persist);
 if (window.ResizeObserver) new ResizeObserver(invalidate).observe(viewport);

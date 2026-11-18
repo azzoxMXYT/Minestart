@@ -2,7 +2,8 @@ const $ = (id) => document.getElementById(id);
 const card = $('game-card'), viewport = $('viewport'), hotbar = $('hotbar');
 const play = $('play'), guide = $('guide-dialog'), worldDialog = $('world-dialog');
 const eco = $('eco'), seedInput = $('seed-input');
-const STORAGE = 'minestart:1';
+const inventoryDialog = $('inventory-dialog');
+const STORAGE = 'minestart:2', LEGACY_STORAGE = 'minestart:1';
 const safeSeed = (value) => Number.isInteger(value) && value >= 0 && value < 1000000;
 const keys = new Set();
 const touchKeys = new Set();
@@ -13,34 +14,48 @@ let renderer;
 let storageOK = true;
 let saveTimer = 0;
 let toastTimer = 0;
-let player, world, selection = 0;
+let player, world, survival, selection = 0, hotSlots = [...PALETTE];
+let mode = GAME_MODE.CREATIVE, savedWorlds = {};
+let miningPointer = null, mineKey = '', mineWork = 0;
+let lastVitals = '', lastClock = '', lastLight = -1, lastWorldDraw = 0, lastCheckpoint = 0;
 let playing = false, started = false, pointerCaptured = false, drag = null, usingTouch = coarse.matches;
 let lastSpace = -Infinity, lockTime = 0;
 let frameRequest = 0, lastFrame = 0, forceDraw = true;
 let lastPosition = '', renderedPose = [], renderedTarget = '';
 
-function readSave() {
-  try {
-    const data = JSON.parse(localStorage.getItem(STORAGE));
-    return data && safeSeed(data.seed) ? data : {};
-  } catch (error) {
+function fromStorage(key) {
+  try { return JSON.parse(localStorage.getItem(key)); }
+  catch (error) {
     if (error.name !== 'SyntaxError') storageOK = false;
-    return {};
+    return null;
   }
+}
+
+function readSave() {
+  const data = fromStorage(STORAGE);
+  if (data && typeof data.worlds === 'object' && data.worlds) {
+    const worlds = {};
+    for (const name of Object.values(GAME_MODE)) if (safeSeed(data.worlds[name]?.seed)) worlds[name] = data.worlds[name];
+    return { mode: data.mode === GAME_MODE.SURVIVAL ? GAME_MODE.SURVIVAL : GAME_MODE.CREATIVE, worlds, eco: data.eco };
+  }
+  const old = storageOK ? fromStorage(LEGACY_STORAGE) : null;
+  if (old && safeSeed(old.seed)) return { mode: GAME_MODE.CREATIVE, worlds: { creative: { ...old, generation: 1 } }, eco: old.eco };
+  return { mode: GAME_MODE.CREATIVE, worlds: {} };
 }
 
 function showStorage() {
   $('save-status').classList.toggle('is-unavailable', !storageOK);
   $('save-text').textContent = storageOK ? 'Sauvegarde locale' : 'Sauvegarde indisponible';
-  $('save-status').title = storageOK ? 'Les constructions sont conservées dans ce navigateur.' : 'Ce navigateur ne permet pas de sauvegarder sur cet appareil.';
+  $('save-status').title = storageOK ? 'Chaque mode a sa propre sauvegarde sur cet appareil.' : 'Ce navigateur ne permet pas de sauvegarder sur cet appareil.';
 }
 
 function persist() {
   clearTimeout(saveTimer); saveTimer = 0;
-  if (!world || !player || !storageOK) return;
-  try {
-    const { x, y, z, yaw, pitch, flying } = player;
-    localStorage.setItem(STORAGE, JSON.stringify({ seed: world.seed, edits: Array.from(world.edits), player: { x, y, z, yaw, pitch, flying }, selection, eco: eco.checked }));
+  if (!world || !player) return;
+  const { x, y, z, yaw, pitch, flying } = player;
+  savedWorlds[mode] = { seed: world.seed, generation: world.generation, edits: Array.from(world.edits), player: { x, y, z, yaw, pitch, flying }, selection, hotbar: [...hotSlots], survival: survival?.snapshot() };
+  if (!storageOK) return;
+  try { localStorage.setItem(STORAGE, JSON.stringify({ mode, worlds: savedWorlds, eco: eco.checked }));
   } catch {
     storageOK = false;
     showStorage();
@@ -63,62 +78,101 @@ function restorePlayer(map, saved) {
   if (!saved || !['x', 'y', 'z', 'yaw', 'pitch'].every((id) => Number.isFinite(saved[id]))) return map.spawn();
   const { x, y, z } = saved;
   if (collides(map, playerBox(x, y, z))) return map.spawn();
-  return { x, y, z, yaw: saved.yaw % (Math.PI * 2), pitch: clamp(saved.pitch, -1.54, 1.54), vy: 0, grounded: false, flying: renderer.is3D && saved.flying === true };
+  return { x, y, z, yaw: saved.yaw % (Math.PI * 2), pitch: clamp(saved.pitch, -1.54, 1.54), vy: 0, grounded: false, flying: !survival && renderer.is3D && saved.flying === true };
 }
 
 function openWorld(seed, data = {}) {
-  world = new World(seed, data.edits);
+  world = new World(seed, data.edits, data.generation === 1 && mode === GAME_MODE.CREATIVE ? 1 : WORLD_GENERATION);
+  survival = mode === GAME_MODE.SURVIVAL ? new Survival(data.survival) : null;
   player = restorePlayer(world, data.player);
+  hotSlots = Array.isArray(data.hotbar) && data.hotbar.length === SLOT_COUNT
+    ? data.hotbar.map((id) => CATALOGUE.includes(id) ? id : ID.AIR)
+    : survival ? Array(SLOT_COUNT).fill(ID.AIR) : [...PALETTE];
+  if (!survival) hotSlots = hotSlots.map((id, i) => id || PALETTE[i]);
+  selection = Number.isInteger(data.selection) && data.selection >= 0 && data.selection < SLOT_COUNT ? data.selection : 0;
   lastSpace = -Infinity;
+  lastCheckpoint = survival?.clock ?? 0;
   renderer.setWorld(world);
   $('world-name').textContent = worldName(seed);
   $('world-seed').textContent = String(seed).padStart(6, '0');
-  lastPosition = '';
+  lastPosition = lastVitals = lastClock = '';
+  lastLight = -1;
+  endMining();
+  refreshHotbar();
   updateUI();
   invalidate();
 }
 
-function makeInventory() {
-  for (const [i, id] of PALETTE.entries()) {
-    const button = document.createElement('button');
-    const num = document.createElement('span');
-    const img = document.createElement('img');
-    const name = BLOCKS[id].name;
-    button.type = 'button'; button.className = 'slot';
-    button.title = `${i + 1} · ${name}`;
-    button.setAttribute('aria-label', `${i + 1} : ${name}`);
-    num.className = 'slot-num'; num.textContent = i + 1; num.setAttribute('aria-hidden', 'true');
-    img.src = blockIcon(art.tiles, id); img.alt = ''; img.draggable = false;
-    button.append(num, img);
-    button.addEventListener('click', () => {
-      select(i);
-      if (playing) canvas.focus({ preventScroll: true });
-    });
-    hotbar.append(button);
+function changeMode(next) {
+  if (mode === next || !Object.values(GAME_MODE).includes(next)) return;
+  pauseGame();
+  persist();
+  mode = next;
+  started = false;
+  const saved = savedWorlds[mode];
+  openWorld(saved?.seed ?? DEFAULT_SEED, saved);
+  persist();
+}
+
+function makeVitals() {
+  for (const [id, symbol] of [['health', 'heart'], ['food', 'food']]) {
+    for (let i = 0; i < 10; i++) {
+      const unit = document.createElement('span');
+      unit.className = 'vital-unit'; unit.setAttribute('aria-hidden', 'true');
+      unit.innerHTML = `<svg class="empty-vital"><use href="#i-${symbol}-pixel"/></svg><svg class="fill-vital"><use href="#i-${symbol}-pixel"/></svg>`;
+      $(id).append(unit);
+    }
   }
 }
 
-function select(i, save = true) {
-  selection = (i + PALETTE.length) % PALETTE.length;
-  for (const [n, slot] of Array.from(hotbar.children).entries()) slot.setAttribute('aria-pressed', String(n === selection));
-  $('block-caption').textContent = BLOCKS[PALETTE[selection]].name;
-  if (save) saveSoon();
+function updateVitals() {
+  if (!survival) return;
+  const health = Math.ceil(survival.health), food = Math.ceil(survival.food), air = Math.ceil(survival.air);
+  const stamp = `${health}:${food}:${Math.floor(survival.air * 10)}`;
+  if (lastVitals !== stamp) {
+    for (const [id, label, value] of [['health', 'Vie', health], ['food', 'Nourriture', food]]) {
+      $(id).setAttribute('aria-label', `${label} : ${value} sur 20`);
+      $(id).title = `${label} : ${value}/20`;
+      for (let i = 0; i < 10; i++) $(id).children[i].style.setProperty('--cutoff', `${100 - clamp(value - i*2, 0, 2)*50}%`);
+    }
+    $('air-meter').hidden = survival.air >= MAX_AIR;
+    $('air-meter').setAttribute('aria-valuenow', air);
+    $('air-meter').style.setProperty('--percent', `${survival.air * 100 / MAX_AIR}%`);
+    lastVitals = stamp;
+  }
+  const time = clockLabel(survival.clock);
+  if (time !== lastClock) {
+    $('clock-text').textContent = time;
+    $('clock-icon').setAttribute('href', survival.night ? '#i-moon' : '#i-sun');
+    $('world-clock').classList.toggle('is-night', survival.night);
+    lastClock = time;
+  }
 }
 
 function updateUI() {
-  const map = !renderer.is3D;
+  const map = !renderer.is3D, dead = survival?.dead;
+  viewport.classList.toggle('is-survival', Boolean(survival));
+  viewport.classList.toggle('is-dead', Boolean(dead));
+  $('vitals').hidden = !survival;
+  $('world-clock').hidden = !survival;
+  updateVitals();
+  for (const button of document.querySelectorAll('[data-mode]')) button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+  $('mode-help').textContent = survival ? 'Récolte, fabrique et tiens jusqu’à l’aube.' : 'Blocs illimités, construction libre.';
+  $('mine-command').textContent = survival ? 'Maintenir gauche' : 'Clic gauche';
+  $('guide-mine').textContent = survival ? 'Maintenir clic gauche / clic droit' : 'Clic gauche / droit';
+  $('guide-berries').hidden = $('guide-eat').hidden = !survival;
   card.classList.toggle('is-playing', playing);
   viewport.classList.toggle('drag-look', playing && !map && !pointerCaptured);
   $('ready').classList.toggle('is-playing', playing);
-  $('ready-text').textContent = playing ? 'Partie en cours' : started ? 'En pause' : 'Prêt à jouer';
+  $('ready-text').textContent = dead ? 'À réapparaître' : playing ? 'Partie en cours' : started ? 'En pause' : 'Prêt à jouer';
   $('view-label').textContent = map ? 'Vue du monde · 2D' : 'Vue du monde';
-  $('game-tag').lastChild.nodeValue = map ? ' VUE 2D' : player?.flying ? ' EN VOL' : ' CRÉATIF';
+  $('game-mode').textContent = `${survival ? 'SURVIE' : player?.flying ? 'EN VOL' : 'CRÉATIF'}${map ? ' · 2D' : ''}`;
   viewport.querySelector('.reticle').hidden = map;
   $('pause').hidden = !playing;
   $('touch-controls').hidden = !(playing && usingTouch);
   $('start-layer').hidden = playing;
-  $('play-label').textContent = started ? 'Reprendre' : 'Jouer';
-  $('play-hint').textContent = map ? 'Vue 2D · Vise les blocs avec le curseur' : started ? 'Retour dans ton monde' : usingTouch ? 'Touche pour entrer dans le monde' : 'Clique pour entrer dans le monde';
+  $('play-label').textContent = dead ? 'Réapparaître' : started ? 'Reprendre' : 'Jouer';
+  $('play-hint').textContent = dead ? `${survival.why || 'Tu as perdu ta vie.'} Ton sac est conservé.` : map ? 'Vue 2D · Vise les blocs avec le curseur' : started ? 'Retour dans ton monde' : survival ? 'Récolte du bois pour fabriquer une pioche.' : usingTouch ? 'Touche pour entrer dans le monde' : 'Clique pour entrer dans le monde';
   const hint = $('footer-hint');
   if (usingTouch) hint.textContent = map ? 'Touche un bloc pour le viser' : 'Glisse pour regarder';
   else {
@@ -126,7 +180,8 @@ function updateUI() {
     hint.replaceChildren(kbd, document.createTextNode(map || (playing && !pointerCaptured) ? ' Mettre en pause' : ' Libérer la souris'));
   }
   $('guide-copy').textContent = map ? 'WebGL est indisponible. En vue 2D, vise un bloc à proximité avec le curseur.' : 'Vise un bloc avec la croix au centre de l’écran. Si la souris n’est pas capturée, glisse sur la vue ou utilise les flèches.';
-  for (const id of ['guide-look', 'guide-fly', 'guide-fly-move', 'eco-option']) $(id).hidden = map;
+  for (const id of ['guide-look', 'eco-option']) $(id).hidden = map;
+  for (const id of ['guide-fly', 'guide-fly-move']) $(id).hidden = map || Boolean(survival);
 }
 
 function updateCoordinates() {
@@ -152,7 +207,7 @@ function directionInputs(dt) {
     if (turn || tilt) rotate(turn * dt * 1.35, tilt * dt * 1.22);
   }
   const shift = active('ShiftLeft', 'ShiftRight');
-  return { side: Number(right) - Number(left), forward: Number(forward) - Number(back), up: active('Space', 'jump'), down: shift, sprint: shift };
+  return { side: Number(right) - Number(left), forward: Number(forward) - Number(back), up: active('Space', 'jump'), down: shift, sprint: shift && (!survival || survival.food >= 3) };
 }
 
 function invalidate() {
@@ -160,10 +215,29 @@ function invalidate() {
   if (!frameRequest) frameRequest = requestAnimationFrame(frame);
 }
 
-function currentTarget(point) {
-  if (!renderer.is3D) return renderer.pick(player, point);
-  const eye = [player.x, player.y + EYE, player.z];
-  return raycast(world, eye, lookDirection(player));
+function currentTarget(point, includeMobs = true) {
+  const reach = survival ? SURVIVAL_REACH : REACH;
+  if (!renderer.is3D) {
+    const cursor = point ?? renderer.hover;
+    if (survival && cursor && includeMobs) {
+      const { ox, oz, tile } = renderer.layout(player);
+      const [x, z] = [(cursor[0] - ox) / tile, (cursor[1] - oz) / tile];
+      const mob = survival.mobs.find((m) => Math.hypot(m.x - x, m.z - z) <= .55 && Math.hypot(m.x - player.x, m.z - player.z) <= 3.5);
+      if (mob) return { mob };
+    }
+    return renderer.pick(player, cursor, reach);
+  }
+  const eye = [player.x, player.y + EYE, player.z], direction = lookDirection(player);
+  const block = raycast(world, eye, direction, reach);
+  if (survival && includeMobs) {
+    let closest = Math.min(3.5, block?.distance ?? 3.5), aimed = null;
+    for (const mob of survival.mobs) {
+      const d = rayBox(eye, direction, slimeBox(mob.x, mob.y, mob.z), closest);
+      if (d < closest) { closest = d; aimed = mob; }
+    }
+    if (aimed) return { mob: aimed };
+  }
+  return block;
 }
 
 function frame(now) {
@@ -175,20 +249,39 @@ function frame(now) {
     return;
   }
   lastFrame = now;
+  let dt = 0;
   if (playing && elapsed > 0) {
-    const dt = Math.min(elapsed / 1000, .09);
+    dt = Math.min(elapsed / 1000, .09);
     const parts = Math.max(1, Math.ceil(dt / .011));
     const axes = directionInputs(dt);
     for (let i = 0; i < parts; i++) advance(world, player, axes, dt / parts);
+    if (survival) {
+      const previous = survival.damageCount;
+      survival.step(world, player, axes, dt, updateTerrain);
+      updateVitals();
+      if (survival.damageCount !== previous) {
+        const flash = $('damage-flash');
+        flash.classList.remove('is-hit'); void flash.offsetWidth; flash.classList.add('is-hit');
+        if (survival.dead) pauseGame();
+        else { announce(survival.why); saveSoon(); }
+      }
+      if (survival.clock - lastCheckpoint >= 12) { lastCheckpoint = survival.clock; persist(); }
+    }
   }
   const hit = playing ? currentTarget() : null;
+  if (playing && survival && miningPointer !== null) dig(hit, dt);
+  viewport.classList.toggle('aimed-mob', Boolean(hit?.mob));
   const pose = [player.x, player.y, player.z, player.yaw, player.pitch];
-  const target = hit?.cell.join(',') ?? '';
-  // A stationary view does not need to redraw, even with the game unpaused.
-  if (forceDraw || target !== renderedTarget || pose.some((v, i) => Math.abs(v - renderedPose[i]) > .0001)) {
-    renderer.draw(player, hit, now, eco.checked);
+  const target = hit?.cell?.join(',') ?? hit?.mob?.id ?? '';
+  const light = survival ? Math.round(daylightAt(survival.clock) * 100) : 100;
+  const animated = playing && survival?.mobs.length && now - lastWorldDraw > (eco.checked || !renderer.is3D ? 80 : 64);
+  // Stay idle while the camera, weather and creatures are still.
+  if (forceDraw || animated || light !== lastLight || target !== renderedTarget || pose.some((v, i) => Math.abs(v - renderedPose[i]) > .0001)) {
+    renderer.draw(player, hit, now, eco.checked, survival);
     renderedPose = pose;
     renderedTarget = target;
+    lastLight = light;
+    lastWorldDraw = now;
     updateCoordinates();
   }
   forceDraw = false;
@@ -208,7 +301,11 @@ function usingDrag() {
 }
 
 function startGame() {
-  if (playing || play.disabled || guide.open || worldDialog.open) return;
+  if (playing || play.disabled || guide.open || worldDialog.open || inventoryDialog.open) return;
+  if (survival?.dead) {
+    survival.respawn(); player = world.spawn(); lastVitals = '';
+    persist();
+  }
   started = true;
   playing = true;
   lastFrame = performance.now();
@@ -228,7 +325,7 @@ function pauseGame() {
   if (!playing) return;
   playing = false;
   pointerCaptured = false;
-  keys.clear(); touchKeys.clear(); drag = null;
+  keys.clear(); touchKeys.clear(); drag = null; endMining();
   if (document.pointerLockElement === canvas) document.exitPointerLock();
   clearTimeout(toastTimer); $('toast').hidden = true;
   updateUI();
@@ -236,19 +333,96 @@ function pauseGame() {
   invalidate();
 }
 
-function editBlock(place, point) {
-  if (!playing) return;
-  const hit = currentTarget(point);
-  if (!hit) { announce('Approche-toi d’un bloc pour le modifier.'); return; }
-  const cell = place ? hit.neighbor : hit.cell;
-  if (!cell || !inside(...cell)) return;
-  const [x,y,z] = cell;
-  if (place && (solid(world.get(x,y,z)) || intersectsPlayer(player, x,y,z))) return;
-  if (!place && hit.id === ID.BEDROCK) { announce('La roche mère ne peut pas être cassée.'); return; }
-  if (!world.set(x,y,z,place ? PALETTE[selection] : ID.AIR)) return;
+function updateTerrain(x, z) {
   renderer.update(x, z);
   saveSoon();
   invalidate();
+}
+
+function editBlock(place, point) {
+  if (!playing) return;
+  const hit = currentTarget(point, false);
+  if (!hit) { announce('Approche-toi d’un bloc pour le modifier.'); return; }
+  if (place && survival && hit.id === ID.BERRY_BUSH) {
+    const got = survival.harvest(world, hit.cell);
+    if (got) {
+      announce(`+${got} baies · F pour manger`);
+      updateTerrain(hit.cell[0], hit.cell[2]);
+    } else announce('Tu ne peux pas ramasser plus de baies.');
+    return;
+  }
+  const cell = place ? hit.neighbor : hit.cell;
+  if (!cell || !inside(...cell)) return;
+  const [x,y,z] = cell;
+  const id = place ? hotSlots[selection] : ID.AIR;
+  if (place) {
+    if (!id || (survival && !survival.count(id))) { announce('Ton emplacement est vide. Récolte des blocs ou ouvre l’inventaire (E).'); return; }
+    if (solid(world.get(x,y,z)) || intersectsPlayer(player,x,y,z)) return;
+    if (isPlant(id) && !solid(world.get(x,y-1,z))) { announce('Pose cette décoration sur un bloc solide.'); return; }
+  }
+  if (!place && hit.id === ID.BEDROCK) { announce('La roche mère ne peut pas être cassée.'); return; }
+  if (!world.set(x,y,z,id)) return;
+  if (place && survival) { survival.spend(id); refreshHotbar(); }
+  updateTerrain(x,z);
+}
+
+function endMining() {
+  miningPointer = null;
+  mineKey = ''; mineWork = 0;
+  $('mine-meter').hidden = true;
+}
+
+function beginBreak(pointer, point) {
+  if (!playing) return;
+  if (!survival) { editBlock(false, point); return; }
+  endMining();
+  const target = currentTarget(point);
+  if (target?.mob) {
+    const message = survival.strike(target.mob);
+    if (message) { announce(message); saveSoon(); invalidate(); }
+    return;
+  }
+  if (!target) announce('Approche-toi et vise un bloc.');
+  miningPointer = pointer;
+}
+
+function dig(hit, dt) {
+  const key = hit?.cell ? `${hit.cell.join(',')}:${hit.id}` : '';
+  const meter = $('mine-meter');
+  const fresh = key !== mineKey;
+  if (fresh) { mineKey = key; mineWork = 0; }
+  if (!key) { meter.hidden = true; return; }
+  const rule = mineRule(hit.id, survival.tool);
+  if (!rule.seconds) {
+    meter.hidden = true;
+    if (fresh) announce(rule.hint);
+    return;
+  }
+  mineWork += dt;
+  meter.hidden = false;
+  meter.style.setProperty('--percent', `${clamp(mineWork / rule.seconds,0,1)*100}%`);
+  if (mineWork < rule.seconds) return;
+  if (world.set(...hit.cell, ID.AIR)) {
+    const id = blockDrop(hit.id);
+    const qty = survival.add(id);
+    if (qty) {
+      addToHotbar(id);
+      announce(`${ITEMS[id].name} +${qty}`, 1150);
+    }
+    survival.food = Math.max(0, survival.food - .10);
+    refreshHotbar();
+    updateTerrain(hit.cell[0], hit.cell[2]);
+  }
+  mineWork = 0; mineKey = ''; meter.hidden = true;
+}
+
+function eatBerries() {
+  if (!survival) return;
+  const ok = survival.eat();
+  const text = ok ? 'Tu as mangé une baie · +5 nourriture' : survival.count(IT.BERRIES) ? 'Tu n’as pas faim.' : 'Récolte des baies avec un clic droit sur un buisson.';
+  if (inventoryDialog.open) { refreshInventory(); inventoryMessage(text); }
+  else announce(text);
+  if (ok) { updateVitals(); saveSoon(); }
 }
 
 function canvasPoint(e) {
@@ -267,18 +441,23 @@ function connectCanvas() {
     announce('Affichage 3D indisponible. Le jeu continue en 2D.', 4000);
   }, { once: true });
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-  canvas.addEventListener('click', () => { if (!playing) startGame(); });
+  canvas.addEventListener('click', () => { if (!playing && !survival?.dead) startGame(); });
   canvas.addEventListener('pointerdown', (e) => {
-    if (!playing || e.button > 2 || e.button === 1) return;
+    if (!playing || (e.button !== 0 && e.button !== 2)) return;
     e.preventDefault();
     if (!renderer.is3D) {
       renderer.hover = canvasPoint(e);
-      if (e.pointerType !== 'touch') editBlock(e.button === 2, renderer.hover);
+      if (e.pointerType !== 'touch') {
+        if (e.button === 2) editBlock(true, renderer.hover);
+        else beginBreak(e.pointerId, renderer.hover);
+      }
       return;
     }
-    if (pointerCaptured || e.button === 2) { editBlock(e.button === 2); return; }
+    if (e.button === 2) { editBlock(true); return; }
+    if (pointerCaptured) { beginBreak(e.pointerId); return; }
     drag = { id: e.pointerId, x: e.clientX, y: e.clientY, distance: 0, touch: e.pointerType === 'touch' };
     canvas.setPointerCapture?.(e.pointerId);
+    if (survival && !drag.touch) beginBreak(e.pointerId);
   });
   canvas.addEventListener('pointermove', (e) => {
     if (!playing) return;
@@ -286,15 +465,23 @@ function connectCanvas() {
     if (pointerCaptured || drag?.id !== e.pointerId) return;
     const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
     drag.x = e.clientX; drag.y = e.clientY; drag.distance += Math.abs(dx) + Math.abs(dy);
-    if (drag.distance >= 3) rotate(dx * .0053, -dy * .0053);
+    if (drag.distance >= 4) {
+      if (miningPointer === e.pointerId) endMining();
+      rotate(dx * .0053, -dy * .0053);
+    }
   });
   canvas.addEventListener('pointerup', (e) => {
     if (drag?.id !== e.pointerId) return;
-    if (playing && drag.distance < 5 && !drag.touch) editBlock(false);
+    if (playing && !survival && drag.distance < 5 && !drag.touch) editBlock(false);
     drag = null;
   });
-  for (const event of ['pointercancel', 'lostpointercapture']) canvas.addEventListener(event, () => { drag = null; });
-  canvas.addEventListener('pointerleave', () => { if (!renderer.is3D && !usingTouch) renderer.hover = null; });
+  for (const event of ['pointercancel', 'lostpointercapture']) canvas.addEventListener(event, (e) => {
+    if (miningPointer === e.pointerId) endMining();
+    if (drag?.id === e.pointerId) drag = null;
+  });
+  canvas.addEventListener('pointerleave', () => {
+    if (!renderer.is3D && !usingTouch) { renderer.hover = null; if (miningPointer !== null) endMining(); }
+  });
 }
 
 function useMap() {
@@ -308,7 +495,9 @@ function useMap() {
 function setFullscreenLabel() {
   const on = document.fullscreenElement === card || card.classList.contains('theater');
   $('fullscreen').setAttribute('aria-pressed', String(on));
-  $('fullscreen-label').textContent = on ? 'Quitter le plein écran' : 'Plein écran';
+  const label = on ? 'Quitter le plein écran' : 'Plein écran';
+  $('fullscreen-label').textContent = label;
+  $('fullscreen').setAttribute('aria-label', label);
   $('fullscreen-icon').setAttribute('href', on ? '#i-contract' : '#i-expand');
   invalidate();
 }
@@ -333,6 +522,15 @@ function openDialog(dialog) {
   dialog.showModal();
 }
 
+function openInventory() {
+  if (inventoryDialog.open || guide.open || worldDialog.open) return;
+  inventoryTab = 'blocks';
+  $('block-search').value = '';
+  inventoryMessage('');
+  refreshInventory();
+  openDialog(inventoryDialog);
+}
+
 function randomSeed() {
   let seed;
   do { seed = Math.floor(Math.random() * 1000000); } while (seed === world.seed || seed === Number(seedInput.value));
@@ -343,9 +541,12 @@ try { renderer = new VoxelRenderer(canvas, art); connectCanvas(); }
 catch { useMap(); }
 const saved = readSave();
 eco.checked = saved.eco === true;
+mode = saved.mode;
+savedWorlds = saved.worlds;
 makeInventory();
-select(Number.isInteger(saved.selection) && saved.selection >= 0 && saved.selection < PALETTE.length ? saved.selection : 0, false);
-openWorld(saved.seed ?? DEFAULT_SEED, saved);
+makeVitals();
+const initial = savedWorlds[mode];
+openWorld(initial?.seed ?? DEFAULT_SEED, initial);
 showStorage();
 play.disabled = false;
 if (location.protocol === 'file:') $('download').href = location.href.split('#')[0];
@@ -355,7 +556,18 @@ $('pause').addEventListener('click', pauseGame);
 $('fullscreen').addEventListener('click', toggleFullscreen);
 document.addEventListener('fullscreenchange', setFullscreenLabel);
 $('open-guide').addEventListener('click', () => openDialog(guide));
-$('new-world').addEventListener('click', () => { randomSeed(); openDialog(worldDialog); });
+$('open-inventory').addEventListener('click', openInventory);
+$('block-search').addEventListener('input', refreshInventory);
+$('eat').addEventListener('click', eatBerries);
+for (const button of document.querySelectorAll('[data-mode]')) button.addEventListener('click', () => changeMode(button.dataset.mode));
+for (const button of $('inventory-tabs').querySelectorAll('button')) button.addEventListener('click', () => {
+  inventoryTab = button.dataset.tab;
+  refreshInventory();
+});
+$('new-world').addEventListener('click', () => {
+  $('world-warning').textContent = `Ce nouveau monde remplacera uniquement la partie ${survival ? 'Survie' : 'Créatif'} et ses constructions.`;
+  randomSeed(); openDialog(worldDialog);
+});
 $('cancel-world').addEventListener('click', () => worldDialog.close());
 $('random-seed').addEventListener('click', randomSeed);
 $('world-form').addEventListener('submit', (e) => {
@@ -372,20 +584,30 @@ eco.addEventListener('change', () => { persist(); invalidate(); });
 
 window.addEventListener('keydown', (e) => {
   if (guide.open || worldDialog.open || e.ctrlKey || e.metaKey || e.altKey) return;
+  const code = keyboardCode(e);
+  const writing = e.target instanceof HTMLInputElement || e.target.isContentEditable;
+  if (!writing && !e.repeat && code === 'KeyE') {
+    e.preventDefault();
+    if (inventoryDialog.open) inventoryDialog.close(); else openInventory();
+    return;
+  }
+  if (!writing && !e.repeat && code === 'KeyF' && survival && !survival.dead && (playing || inventoryDialog.open)) {
+    e.preventDefault(); eatBerries(); return;
+  }
+  if (inventoryDialog.open) return;
   if (e.key === 'Escape') {
     if (playing) { e.preventDefault(); pauseGame(); }
     else if (card.classList.contains('theater')) toggleFullscreen();
     return;
   }
   if (!playing) return;
-  const code = keyboardCode(e);
   if (/^(Digit|Numpad)[1-8]$/.test(code) || /^[1-8]$/.test(e.key)) {
     e.preventDefault(); select(Number(/^[1-8]$/.test(e.key) ? e.key : code.at(-1)) - 1); return;
   }
   if (!/^(Key[WZQASD]|Arrow(Left|Up|Down|Right)|Space|Shift(Left|Right))$/.test(code)) return;
   e.preventDefault();
   keys.add(code);
-  if (code === 'Space' && !e.repeat && renderer.is3D) {
+  if (code === 'Space' && !e.repeat && renderer.is3D && !survival) {
     if (performance.now() - lastSpace < 285) {
       player.flying = !player.flying;
       player.vy = 0;
@@ -398,7 +620,7 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('keyup', (e) => keys.delete(keyboardCode(e)));
 function keyboardCode(e) {
   if (e.code && e.code !== 'Unidentified') return e.code;
-  if (/^[wzqasd]$/i.test(e.key)) return `Key${e.key.toUpperCase()}`;
+  if (/^[wzqasdef]$/i.test(e.key)) return `Key${e.key.toUpperCase()}`;
   return e.key === ' ' ? 'Space' : e.key === 'Shift' ? 'ShiftLeft' : e.key;
 }
 
@@ -433,11 +655,20 @@ for (const button of viewport.querySelectorAll('[data-move], [data-act="jump"]')
   });
   for (const event of ['pointerup','pointercancel','lostpointercapture']) button.addEventListener(event, () => touchKeys.delete(move));
 }
-for (const button of viewport.querySelectorAll('[data-act="break"], [data-act="place"]')) {
-  button.addEventListener('click', () => editBlock(button.dataset.act === 'place'));
-}
+const touchBreak = viewport.querySelector('[data-act="break"]');
+touchBreak.addEventListener('pointerdown', (e) => {
+  if (!survival) return;
+  e.preventDefault();
+  touchBreak.setPointerCapture?.(e.pointerId);
+  beginBreak(e.pointerId);
+});
+touchBreak.addEventListener('click', () => { if (!survival) editBlock(false); });
+viewport.querySelector('[data-act="place"]').addEventListener('click', () => editBlock(true));
+for (const event of ['pointerup', 'pointercancel']) window.addEventListener(event, (e) => {
+  if (e.pointerId === miningPointer && (event === 'pointercancel' || e.button === 0)) endMining();
+});
 
-window.addEventListener('blur', () => { keys.clear(); touchKeys.clear(); });
+window.addEventListener('blur', () => { keys.clear(); touchKeys.clear(); endMining(); });
 document.addEventListener('visibilitychange', () => { if (document.hidden) pauseGame(); });
 window.addEventListener('pagehide', persist);
 if (window.ResizeObserver) new ResizeObserver(invalidate).observe(viewport);

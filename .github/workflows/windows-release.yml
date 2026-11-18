@@ -3,9 +3,9 @@ name: Publication Windows
 on:
   workflow_dispatch:
   push:
-    # Bootstrap this release while the Arena branch is not yet the default branch.
+    # Publish explicit release-note updates from the active branch.
     branches: [arena/09cef573-minestart]
-    paths: [.github/workflows/windows-release.yml]
+    paths: [.github/workflows/windows-release.yml, native/release-notes.md]
 
 permissions:
   contents: write

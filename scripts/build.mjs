@@ -8,7 +8,7 @@ const css = read('src/style.css')
   .replace('__PIXELIFY__', font('pixelify-sans-latin-700-normal'))
   .replace('__GROTESK__', font('space-grotesk-latin-wght-normal'))
   .replace('__PLEX__', font('ibm-plex-mono-latin-500-normal'));
-const js = ['terrain', 'art', 'render', 'game'].map((file) => read(`src/${file}.js`).trim()).join('\n\n');
+const js = ['terrain', 'survival', 'art', 'render', 'inventory', 'game'].map((file) => read(`src/${file}.js`).trim()).join('\n\n');
 const html = read('src/template.html')
   .replace('<!-- __FONT_LICENSES__ -->', () => `<!-- Polices incorporées · SIL Open Font License\n${licenses.replaceAll('--', '—')}\n-->`)
   .replace('/* __STYLE__ */', () => css)

@@ -40,6 +40,12 @@
     <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
     <symbol id="i-jump" viewBox="0 0 24 24"><path d="M12 17V4m-5 5 5-5 5 5M5 21h14"/></symbol>
     <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14m6-14v14" stroke-width="2.8"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><path d="M8 7V5a4 4 0 0 1 8 0v2M5 7h14l2 13H3zM8 11h8m-8 4h8"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 4-3.3 7-8 9-4.7-2-8-5-8-9V6z"/><path d="M12 7v9m-3-6h6"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.7 14.3a8.8 8.8 0 0 1-11-11 9.1 9.1 0 1 0 11 11Z"/></symbol>
+    <symbol id="i-heart-pixel" viewBox="0 0 12 12"><path d="M1 2h3v1h1v1h2V3h1V2h3v1h1v4h-1v1h-1v1H9v1H8v1H7v1H5v-1H4v-1H3V9H2V8H1V7H0V3h1z" fill="currentColor"/></symbol>
+    <symbol id="i-food-pixel" viewBox="0 0 12 12"><path d="M6 1h4v1h1v1h1v4h-2v1H8v1H6v1H4v2H1v-1H0V8h2V7h2V5h1V3h1z" fill="currentColor"/></symbol>
   </svg>
 
   <header class="topbar">
@@ -59,9 +65,9 @@
   <main class="shell">
     <section class="intro" aria-labelledby="main-title">
       <div>
-        <div class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-blocks"/></svg> BAC À SABLE CRÉATIF</div>
+        <div class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-blocks"/></svg> JEU DE BLOCS · CRÉATIF &amp; SURVIE</div>
         <h1 id="main-title">Terrain de jeu<span>.</span></h1>
-        <p>Explore, casse et construis dans un monde fait de blocs.</p>
+        <p>Construis sans limite ou prépare-toi à survivre à la nuit.</p>
       </div>
       <div class="ready" id="ready"><span class="status-dot"></span><span id="ready-text">Prêt à jouer</span></div>
     </section>
@@ -72,6 +78,7 @@
           <div class="game-heading"><svg class="icon" aria-hidden="true"><use href="#i-screen"/></svg><span id="view-label">Vue du monde</span></div>
           <div class="game-actions">
             <button class="bare-button pause" id="pause" type="button" aria-label="Mettre en pause" title="Mettre en pause (Échap)" hidden><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg></button>
+            <button class="bare-button inventory-toggle" id="open-inventory" type="button" aria-label="Inventaire (E)"><svg class="icon" aria-hidden="true"><use href="#i-bag"/></svg><span>Inventaire</span><kbd>E</kbd></button>
             <button class="bare-button fullscreen" id="fullscreen" type="button" aria-pressed="false"><svg class="icon" aria-hidden="true"><use id="fullscreen-icon" href="#i-expand"/></svg><span id="fullscreen-label">Plein écran</span></button>
           </div>
         </div>
@@ -82,8 +89,11 @@
             <svg class="icon" aria-hidden="true"><use href="#i-crosshair"/></svg>
             <span><b>X</b> <span id="coord-x">52</span></span><span><b>Y</b> <span id="coord-y">20</span></span><span><b>Z</b> <span id="coord-z">93</span></span>
           </div>
-          <div class="game-tag" id="game-tag"><span></span> CRÉATIF</div>
+          <div class="game-tag" id="game-tag"><span></span><b id="game-mode">CRÉATIF</b></div>
+          <div class="world-clock" id="world-clock" hidden><svg class="icon" aria-hidden="true"><use id="clock-icon" href="#i-sun"/></svg><span id="clock-text">Jour 1 · 08:00</span></div>
           <div class="reticle" aria-hidden="true"></div>
+          <div class="mine-meter" id="mine-meter" aria-hidden="true" hidden><span></span></div>
+          <div class="damage-flash" id="damage-flash" aria-hidden="true"></div>
           <div class="start-layer" id="start-layer">
             <button class="play-button" id="play" type="button" disabled><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span id="play-label">Jouer</span></button>
             <div id="play-hint">Clique pour entrer dans le monde</div>
@@ -103,6 +113,12 @@
             </div>
           </div>
           <div class="inventory">
+            <div class="vitals" id="vitals" hidden>
+              <div class="vital-meter health" id="health" role="img" aria-label="Vie : 20 sur 20"></div>
+              <div class="vitals-divider" aria-hidden="true"></div>
+              <div class="vital-meter food" id="food" role="img" aria-label="Faim : 20 sur 20"></div>
+              <div class="air-meter" id="air-meter" role="meter" aria-label="Air" aria-valuemin="0" aria-valuemax="10" aria-valuenow="10" hidden><span></span></div>
+            </div>
             <div class="block-caption" id="block-caption">Herbe</div>
             <div class="hotbar" id="hotbar" role="group" aria-label="Choix du bloc"></div>
           </div>
@@ -117,8 +133,12 @@
         <section class="panel world-panel" aria-labelledby="world-name">
           <div class="section-kicker"><span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-map"/></svg></span><span>MONDE ACTUEL</span></div>
           <h2 class="world-name" id="world-name">Vallon vert</h2>
+          <div class="mode-switch" role="group" aria-label="Mode de jeu">
+            <button type="button" data-mode="creative" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-blocks"/></svg>Créatif</button>
+            <button type="button" data-mode="survival" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>Survie</button>
+          </div>
+          <p class="mode-help" id="mode-help">Blocs illimités, construction libre.</p>
           <dl class="world-facts">
-            <div><dt>Mode</dt><dd class="mode-value">Créatif</dd></div>
             <div><dt>Graine</dt><dd id="world-seed" class="seed-value">084217</dd></div>
           </dl>
           <button class="button new-world" id="new-world" type="button"><svg class="icon" aria-hidden="true"><use href="#i-rotate"/></svg><span>Nouveau monde</span></button>
@@ -129,10 +149,10 @@
           <dl class="controls">
             <div><dt>Se déplacer</dt><dd class="key-group"><kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd></dd></div>
             <div><dt>Sauter</dt><dd><kbd>Espace</kbd></dd></div>
-            <div><dt>Courir</dt><dd><kbd>Maj</kbd></dd></div>
-            <div><dt>Casser un bloc</dt><dd class="mouse-label"><svg class="icon" aria-hidden="true"><use href="#i-mouse-l"/></svg> Clic gauche</dd></div>
+            <div><dt>Casser un bloc</dt><dd class="mouse-label"><svg class="icon" aria-hidden="true"><use href="#i-mouse-l"/></svg><span id="mine-command">Clic gauche</span></dd></div>
             <div><dt>Poser un bloc</dt><dd class="mouse-label"><svg class="icon" aria-hidden="true"><use href="#i-mouse-r"/></svg> Clic droit</dd></div>
             <div><dt>Choisir un bloc</dt><dd class="key-range"><kbd>1</kbd><span>–</span><kbd>8</kbd></dd></div>
+            <div><dt>Inventaire</dt><dd><kbd>E</kbd></dd></div>
           </dl>
           <button class="guide-link" id="open-guide" type="button">Toutes les commandes <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button>
         </section>
@@ -160,7 +180,10 @@
       <div><dt>Courir</dt><dd><kbd>Maj</kbd></dd></div>
       <div id="guide-fly"><dt>Activer / arrêter le vol</dt><dd><kbd>Espace</kbd> × 2</dd></div>
       <div id="guide-fly-move"><dt>Monter / descendre en vol</dt><dd><kbd>Espace</kbd> / <kbd>Maj</kbd></dd></div>
-      <div><dt>Casser / poser un bloc</dt><dd>Clic gauche / droit</dd></div>
+      <div><dt>Casser / poser un bloc</dt><dd id="guide-mine">Clic gauche / droit</dd></div>
+      <div><dt>Inventaire / fabrication</dt><dd><kbd>E</kbd></dd></div>
+      <div id="guide-berries" hidden><dt>Récolter des baies</dt><dd>Clic droit sur un buisson</dd></div>
+      <div id="guide-eat" hidden><dt>Manger les baies</dt><dd><kbd>F</kbd></dd></div>
       <div><dt>Choisir un bloc</dt><dd><kbd>1</kbd> – <kbd>8</kbd> ou molette</dd></div>
       <div><dt>Mettre en pause</dt><dd><kbd>Échap</kbd></dd></div>
     </dl>
@@ -173,12 +196,40 @@
       <h2 id="new-title">Nouveau monde</h2>
       <button type="submit" class="bare-button dialog-close" aria-label="Fermer"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
     </form>
-    <p class="dialog-copy">Cette action remplace le monde actuel et ses constructions sur cet appareil.</p>
+    <p class="dialog-copy" id="world-warning">Cette action remplace le monde et les constructions du mode actuel uniquement.</p>
     <form id="world-form">
       <label class="seed-label" for="seed-input">Graine du monde <span>(0 à 999999)</span></label>
       <div class="seed-field"><input type="text" inputmode="numeric" pattern="[0-9]{1,6}" maxlength="6" id="seed-input" autocomplete="off" required><button type="button" class="button" id="random-seed"><svg class="icon" aria-hidden="true"><use href="#i-dice"/></svg>Aléatoire</button></div>
       <div class="dialog-actions"><button type="button" class="button" id="cancel-world">Annuler</button><button type="submit" class="button primary">Créer le monde <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></div>
     </form>
+  </dialog>
+  <dialog id="inventory-dialog" class="inventory-dialog" aria-labelledby="inventory-title">
+    <form method="dialog" class="dialog-head">
+      <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-bag"/></svg></span>
+      <h2 id="inventory-title">Inventaire</h2>
+      <button type="submit" class="bare-button dialog-close" aria-label="Fermer"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </form>
+    <div class="inventory-tabs" id="inventory-tabs" role="group" aria-label="Vue de l’inventaire" hidden>
+      <button type="button" data-tab="blocks" aria-pressed="true">Sac à dos</button>
+      <button type="button" data-tab="craft" aria-pressed="false">Fabrication</button>
+    </div>
+    <div class="survival-kit" id="survival-kit" hidden>
+      <div><img id="tool-img" alt="" hidden><span><small>OUTIL ACTIF</small><strong id="tool-name">Mains nues</strong></span></div>
+      <button class="button" id="eat" type="button"><svg class="icon food-icon" aria-hidden="true"><use href="#i-food-pixel"/></svg><span id="eat-text">Manger · 2 baies</span><kbd>F</kbd></button>
+    </div>
+    <section id="blocks-tab" aria-label="Matériaux">
+      <div class="catalogue-head">
+        <div><strong id="catalogue-title">Catalogue de blocs</strong><p id="catalogue-copy">Clique sur un bloc pour le mettre dans ta barre rapide.</p></div>
+        <input id="block-search" type="search" aria-label="Chercher un bloc" placeholder="Chercher un bloc…" autocomplete="off">
+      </div>
+      <div class="catalogue-grid" id="catalogue-grid"></div>
+      <p class="catalogue-empty" id="catalogue-empty" hidden></p>
+    </section>
+    <section id="craft-tab" aria-label="Recettes de fabrication" hidden>
+      <div class="catalogue-head"><div><strong>Recettes</strong><p>Récolte du bois, fabrique des planches, puis ta première pioche.</p></div></div>
+      <div class="recipe-list" id="recipe-list"></div>
+    </section>
+    <div class="inventory-foot"><span id="inventory-status" role="status"></span><span id="active-slot">Emplacement 1 sur 8</span></div>
   </dialog>
   <script>/* __SCRIPT__ */</script>
 </body>

@@ -7,22 +7,27 @@ const FACES = [
   { n: [-1,0, 0], axes: [1, 2], light: .94, corners: [[0,1,0],[0,1,1],[0,0,1],[0,0,0]] },
 ];
 const UV = [[0,0],[1,0],[1,1],[0,1]];
-const STRIDE = 9;
+const STRIDE = 10;
 const PER_ROW = SIZE / CHUNK;
 const HORIZON = [.71, .855, .895];
+const NIGHT_HORIZON = [.12, .19, .30];
 const GL_VERTEX = `
   attribute vec3 position;
   attribute vec2 uv;
   attribute vec3 light;
   attribute float material;
+  attribute float glow;
   uniform mat4 projection;
+  uniform vec3 offset;
+  uniform vec3 scale;
   varying vec2 vUv;
   varying vec3 vLight;
   varying vec3 vWorld;
   varying float vMaterial;
+  varying float vGlow;
   void main() {
-    vUv = uv; vLight = light; vWorld = position; vMaterial = material;
-    gl_Position = projection * vec4(position, 1.0);
+    vUv = uv; vLight = light; vWorld = position * scale + offset; vMaterial = material; vGlow = glow;
+    gl_Position = projection * vec4(vWorld, 1.0);
   }
 `;
 const GL_FRAGMENT = `
@@ -32,10 +37,14 @@ const GL_FRAGMENT = `
   uniform vec3 fogColor;
   uniform vec2 fogRange;
   uniform float clock;
+  uniform float daylight;
+  uniform vec3 lakeTile;
+  uniform float flash;
   varying vec2 vUv;
   varying vec3 vLight;
   varying vec3 vWorld;
   varying float vMaterial;
+  varying float vGlow;
   void main() {
     float dist = distance(eye, vWorld);
     vec4 texel = texture2D(atlas, vUv);
@@ -44,12 +53,17 @@ const GL_FRAGMENT = `
     if (vMaterial > .5 && vMaterial < 1.5) {
       vec2 p = floor(vWorld.xz * 16.0) / 16.0;
       vec2 ripple = fract(p * vec2(.43, .69) + vec2(clock * .035, 0.0));
-      vec3 lake = texture2D(atlas, vec2(.5625,.5625) + ripple * .125).rgb;
+      vec3 lake = texture2D(atlas, lakeTile.xy + ripple * lakeTile.z).rgb;
       float bands = sin(p.y * 6.6 + sin(p.x * .48 + clock * .65) * 2.5 + clock * .76);
       float streak = smoothstep(.66, 1.0, bands) * smoothstep(-.3, .8, sin(p.x * 2.15 - p.y + clock * .4));
       color = mix(color, lake * vLight, .74);
       color = mix(color, vec3(.59,.80,.83), .24 * streak + .13 * smoothstep(12.0, 56.0, dist));
     }
+    vec3 dayShade = mix(vec3(.34,.46,.69), vec3(1.0), daylight);
+    vec3 warm = color * vec3(1.14,.91,.62) + vec3(.048,.027,.006);
+    color = mix(color * dayShade, warm, vGlow * mix(.9,.19,daylight));
+    if (vMaterial > 3.5 && vMaterial < 4.5) color = texel.rgb * mix(.84,1.06,daylight);
+    if (vMaterial > 4.5) color = mix(color + vec3(.02,.045,.033), vec3(.91,.96,.85), flash);
     float fog = smoothstep(fogRange.x, fogRange.y, dist);
     if (vMaterial > 1.5 && vMaterial < 2.5) fog = smoothstep(58.0, 200.0, dist) * .56;
     gl_FragColor = vec4(mix(color, fogColor, fog * .86), 1.0);
@@ -69,13 +83,35 @@ const SKY_FRAGMENT = `
   uniform vec2 lens;
   uniform vec3 horizon;
   uniform float submerged;
+  uniform float daylight;
   void main() {
     vec3 d = normalize(forward + right * screen.x * lens.x + up * screen.y * lens.y);
     float h = smoothstep(-.11, .52, d.y);
     vec3 sky = mix(horizon, vec3(.32,.64,.88), h);
     float glow = pow(max(0.0, dot(d, normalize(vec3(-.52,.43,-.49)))), 6.0);
     sky = mix(sky, vec3(.92,.93,.79), .20 * glow);
-    gl_FragColor = vec4(mix(sky, vec3(.22,.52,.61),submerged), 1.0);
+    if (daylight < .999) {
+      vec3 night = mix(vec3(.105,.173,.283), vec3(.046,.076,.162), h);
+      vec3 starCell = floor(d * 118.0);
+      float star = step(.996, fract(sin(dot(starCell,vec3(7.13,33.31,27.72))) * 4912.19));
+      night += vec3(.52,.62,.76) * star * smoothstep(-.01,.13,d.y) * (1.0 - daylight);
+      vec3 moonDirection = normalize(vec3(.285,.195,-.94));
+      float moonFacing = dot(d, moonDirection);
+      if (moonFacing > .976) {
+        vec3 moonRight = normalize(vec3(-moonDirection.z,0.0,moonDirection.x));
+        vec3 moonUp = cross(moonRight, moonDirection);
+        vec2 pixel = floor(vec2(dot(d,moonRight),dot(d,moonUp)) * 196.0);
+        vec2 edge = abs(pixel + .5);
+        float moon = step(max(edge.x,edge.y),6.5) * step(edge.x+edge.y,9.5);
+        float crater = max(step(length(pixel-vec2(2.0,2.0)),2.4), step(length(pixel-vec2(-3.0,-1.0)),1.6));
+        vec3 rock = mix(vec3(.78,.89,.94),vec3(.51,.65,.75),crater * .8);
+        night += vec3(.048,.065,.094) * smoothstep(.979,.999,moonFacing);
+        night = mix(night,rock,moon * (1.0 - daylight));
+      }
+      sky = mix(night,sky,daylight);
+      sky = mix(sky,vec3(.79,.43,.37), 4.0 * daylight * (1.0 - daylight) * (1.0 - h) * .35);
+    }
+    gl_FragColor = vec4(mix(sky, vec3(.14,.42,.53) * mix(.55,1.0,daylight),submerged), 1.0);
   }
 `;
 const LINE_VERTEX = `
@@ -110,14 +146,14 @@ function program(gl, vertex, fragment, attrs, uniforms) {
 class MeshWriter {
   constructor() { this.pages = []; this.verts = []; this.indices = []; }
 
-  face(corners, tile, light, material, turn = 0, double = false) {
+  face(corners, tile, light, material, turn = 0, double = false, glow = 0) {
     if (this.verts.length >= 60000 * STRIDE) this.finish();
     const offset = this.verts.length / STRIDE;
     const [u, v] = tileOrigin(tile);
     const pixel = PIXELS / ATLAS_SIZE;
     for (let i = 0; i < 4; i++) {
       const [s, t] = UV[(i + turn) % 4];
-      this.verts.push(...corners[i], u + s * pixel, v + t * pixel, ...light[i], material);
+      this.verts.push(...corners[i], u + s * pixel, v + t * pixel, ...light[i], material, glow);
     }
     // The brighter diagonal gives smoother joins between ambient-occlusion corners.
     const flip = light[0][0] + light[2][0] > light[1][0] + light[3][0];
@@ -139,11 +175,11 @@ function occlusion(world, outside, axisA, axisB, corner) {
   const sb = corner[axisB] === 0 ? -1 : 1;
   const sample = outside.slice();
   sample[axisA] += sa;
-  const a = solid(world.get(...sample));
+  const a = opaque(world.get(...sample));
   sample[axisB] += sb;
-  const b2 = solid(world.get(...sample));
+  const b2 = opaque(world.get(...sample));
   sample[axisA] -= sa;
-  const b = solid(world.get(...sample));
+  const b = opaque(world.get(...sample));
   return a && b ? .62 : [1, .90, .77, .62][Number(a) + Number(b) + Number(b2)];
 }
 
@@ -152,13 +188,22 @@ function sunShade(world, x, y, z, n) {
   const ox = x + .5 + n[0] * .61, oy = y + .5 + n[1] * .61, oz = z + .5 + n[2] * .61;
   for (let d = 1; d < 9; d++) {
     const id = world.get(Math.floor(ox - d * .65), Math.floor(oy + d * .84), Math.floor(oz + d * .41));
-    if (solid(id)) return d <= 3 ? .73 : .83;
+    if (opaque(id)) return d <= 3 ? .73 : .83;
   }
   return 1;
 }
 
 function terrainMesh(world, cx, cz) {
   const mesh = new MeshWriter();
+  const lights = Array.from(world.torches, coordsOf).filter(([x,,z]) => x >= cx * CHUNK - 7 && x < (cx + 1) * CHUNK + 7 && z >= cz * CHUNK - 7 && z < (cz + 1) * CHUNK + 7);
+  const glowAt = (x,y,z) => {
+    let glow = 0;
+    for (const [tx,ty,tz] of lights) {
+      const d = (x-tx)**2 + (y-ty)**2 + (z-tz)**2;
+      glow = Math.max(glow, 1 - d / (TORCH_RADIUS * TORCH_RADIUS));
+    }
+    return glow * glow;
+  };
   for (let z = cz * CHUNK; z < (cz + 1) * CHUNK; z++) for (let x = cx * CHUNK; x < (cx + 1) * CHUNK; x++) {
     const top = world.tops[x + z * SIZE];
     for (let y = 0; y <= top; y++) {
@@ -169,9 +214,10 @@ function terrainMesh(world, cx, cz) {
         const shade = sunShade(world, x, y, z, [0,0,0]);
         const power = shade * .99;
         const light = Array(4).fill([power, power, power * .96]);
-        const a = .12, b = .88;
-        mesh.face([[x+a,y+1,z+a],[x+b,y+1,z+b],[x+b,y,z+b],[x+a,y,z+a]], tile.top, light, 3, 0, true);
-        mesh.face([[x+b,y+1,z+a],[x+a,y+1,z+b],[x+a,y,z+b],[x+b,y,z+a]], tile.top, light, 3, 0, true);
+        const a = id === ID.TORCH ? .20 : .12, b = 1 - a;
+        const kind = id === ID.TORCH ? 4 : 3, glow = glowAt(x,y,z);
+        mesh.face([[x+a,y+1,z+a],[x+b,y+1,z+b],[x+b,y,z+b],[x+a,y,z+a]], tile.top, light, kind, 0, true, glow);
+        mesh.face([[x+b,y+1,z+a],[x+a,y+1,z+b],[x+a,y,z+b],[x+b,y,z+a]], tile.top, light, kind, 0, true, glow);
         continue;
       }
       for (let i = 0; i < FACES.length; i++) {
@@ -179,7 +225,7 @@ function terrainMesh(world, cx, cz) {
         const outside = [x + n[0], y + n[1], z + n[2]];
         if (outside[1] < 0) continue;
         const other = world.get(...outside);
-        if (solid(other) || (id === ID.WATER && other === ID.WATER)) continue;
+        if (opaque(other) || (id === ID.WATER && other === ID.WATER) || (id === ID.GLASS && other === ID.GLASS)) continue;
         const art = i === 0 ? tile.top : i === 1 ? tile.bottom ?? tile.side : tile.side;
         const water = id === ID.WATER;
         const sun = water || i === 1 ? 1 : sunShade(world, x, y, z, n);
@@ -193,7 +239,7 @@ function terrainMesh(world, cx, cz) {
         });
         const corners = face.corners.map(([vx, vy, vz]) => [x + vx, y + vy - (water ? .12 : 0), z + vz]);
         const turn = i === 0 && (id === ID.GRASS || id === ID.STONE || id === ID.DIRT || id === ID.SAND) ? Math.floor(grain * 4) : 0;
-        mesh.face(corners, art, light, water ? 1 : 0, turn);
+        mesh.face(corners, art, light, water ? 1 : 0, turn, false, glowAt(x+n[0]*.5,y+n[1]*.5,z+n[2]*.5));
       }
     }
   }
@@ -223,6 +269,17 @@ function skyClouds() {
         mesh.face(corners.map(([a, b, c]) => [ox + (x + a) * sx, y + b * sy, oz + (z + c) * sz]), TILE.CLOUD, Array(4).fill(light), 2);
       }
     }
+  }
+  mesh.finish();
+  return mesh.pages;
+}
+
+function slimeMesh() {
+  const mesh = new MeshWriter();
+  for (const face of FACES) {
+    const l = face.light;
+    const light = Array(4).fill([l, l * 1.05, l * 1.08]);
+    mesh.face(face.corners.map(([x,y,z]) => [x-.5,y,z-.5]), face.n[1] ? TILE.SLIME_SKIN : TILE.SLIME_FACE, light, 5, 0, false, .25);
   }
   mesh.finish();
   return mesh.pages;
@@ -259,8 +316,8 @@ class VoxelRenderer {
     this.gl = gl;
     this.canvas = canvas;
     this.is3D = true;
-    this.blocks = program(gl, GL_VERTEX, GL_FRAGMENT, ['position', 'uv', 'light', 'material'], ['projection', 'atlas', 'eye', 'fogColor', 'fogRange', 'clock']);
-    this.sky = program(gl, SKY_VERTEX, SKY_FRAGMENT, ['position'], ['forward', 'right', 'up', 'lens', 'horizon', 'submerged']);
+    this.blocks = program(gl, GL_VERTEX, GL_FRAGMENT, ['position', 'uv', 'light', 'material', 'glow'], ['projection', 'offset', 'scale', 'atlas', 'eye', 'fogColor', 'fogRange', 'clock', 'daylight', 'lakeTile', 'flash']);
+    this.sky = program(gl, SKY_VERTEX, SKY_FRAGMENT, ['position'], ['forward', 'right', 'up', 'lens', 'horizon', 'submerged', 'daylight']);
     this.line = program(gl, LINE_VERTEX, LINE_FRAGMENT, ['position'], ['projection']);
     this.screen = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.screen);
@@ -275,6 +332,7 @@ class VoxelRenderer {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.generateMipmap(gl.TEXTURE_2D);
     this.clouds = this.upload(skyClouds());
+    this.slime = this.upload(slimeMesh());
     this.meshes = new Map();
     this.dirty = new Set();
     this.attributes = [];
@@ -342,13 +400,15 @@ class VoxelRenderer {
       gl.vertexAttribPointer(a.uv, 2, gl.FLOAT, false, bytes, 12);
       gl.vertexAttribPointer(a.light, 3, gl.FLOAT, false, bytes, 20);
       gl.vertexAttribPointer(a.material, 1, gl.FLOAT, false, bytes, 32);
+      gl.vertexAttribPointer(a.glow, 1, gl.FLOAT, false, bytes, 36);
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
       gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, 0);
     }
   }
 
-  draw(p, target, now, eco) {
+  draw(p, target, now, eco, survival) {
     const { gl, sky, blocks } = this;
+    const daylight = survival ? daylightAt(survival.clock) : 1;
     this.resize(eco);
     const v = viewOf(p, this.canvas.width / this.canvas.height);
     const water = this.world.get(...v.eye.map(Math.floor)) === ID.WATER;
@@ -369,14 +429,21 @@ class VoxelRenderer {
     gl.uniform2fv(sky.uni.lens, v.lens);
     gl.uniform3fv(sky.uni.horizon, HORIZON);
     gl.uniform1f(sky.uni.submerged, water ? 1 : 0);
+    gl.uniform1f(sky.uni.daylight, daylight);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     gl.enable(gl.DEPTH_TEST); gl.enable(gl.CULL_FACE);
     this.use(blocks);
     gl.uniformMatrix4fv(blocks.uni.projection, false, v.matrix);
     gl.uniform3fv(blocks.uni.eye, v.eye);
-    gl.uniform3fv(blocks.uni.fogColor, water ? [.22,.53,.61] : HORIZON);
+    const fog = water ? [.22,.53,.61].map((v) => v * mix(.56,1,daylight)) : HORIZON.map((v,i) => mix(NIGHT_HORIZON[i], v, daylight));
+    gl.uniform3fv(blocks.uni.fogColor, fog);
     gl.uniform2fv(blocks.uni.fogRange, water ? [2,19] : [eco ? 28 : 43, radius]);
     gl.uniform1f(blocks.uni.clock, (now / 1000) % 300);
+    gl.uniform1f(blocks.uni.daylight, daylight);
+    gl.uniform3fv(blocks.uni.lakeTile, [...tileOrigin(TILE.WATER), PIXELS / ATLAS_SIZE]);
+    gl.uniform3f(blocks.uni.offset, 0,0,0);
+    gl.uniform3f(blocks.uni.scale, 1,1,1);
+    gl.uniform1f(blocks.uni.flash, 0);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.texture);
     gl.uniform1i(blocks.uni.atlas, 0);
     this.drawPages(this.clouds, blocks.attr);
@@ -388,7 +455,14 @@ class VoxelRenderer {
       if (ahead < -18 || (Math.abs(p.pitch) < .62 && side > Math.max(ahead, 0) * (v.lens[0] + .35) + 21) || Math.hypot(dx,dz) > radius + 13) continue;
       this.drawPages(pages, blocks.attr);
     }
-    if (target) this.drawOutline(target.cell, v.matrix);
+    if (survival) for (const mob of survival.mobs) {
+      const bounce = Math.max(0, Math.sin(survival.clock * 7 + mob.phase));
+      gl.uniform3f(blocks.uni.offset, mob.x, mob.y + bounce*.13, mob.z);
+      gl.uniform3f(blocks.uni.scale, .8 + .06*(1-bounce), .70 + .12*bounce, .8 + .06*(1-bounce));
+      gl.uniform1f(blocks.uni.flash, survival.clock < mob.blink ? .55 : 0);
+      this.drawPages(this.slime, blocks.attr);
+    }
+    if (target?.cell) this.drawOutline(target.cell, v.matrix);
   }
 
   drawOutline([x,y,z], matrix) {
@@ -418,7 +492,7 @@ class MapRenderer {
     this.hover = null;
   }
 
-  setWorld(world) { this.world = world; }
+  setWorld(world) { this.world = world; this.hover = null; }
   update() {}
 
   layout(p) {
@@ -427,18 +501,18 @@ class MapRenderer {
     return { w, h, tile, ox: Math.round(w * .5 - p.x * tile), oz: Math.round(h * .67 - p.z * tile) };
   }
 
-  pick(p, point = this.hover) {
+  pick(p, point = this.hover, reach = REACH) {
     const { ox, oz, tile } = this.layout(p);
     const x = point ? Math.floor((point[0] - ox) / tile) : Math.floor(p.x + 2 * Math.sin(p.yaw));
     const z = point ? Math.floor((point[1] - oz) / tile) : Math.floor(p.z - 2 * Math.cos(p.yaw));
-    if (x < 0 || z < 0 || x >= SIZE || z >= SIZE || Math.hypot(p.x - x - .5, p.z - z - .5) > REACH) return null;
+    if (x < 0 || z < 0 || x >= SIZE || z >= SIZE || Math.hypot(p.x - x - .5, p.z - z - .5) > reach) return null;
     let y = this.world.tops[x + z * SIZE];
     while (y > 0 && this.world.get(x,y,z) === ID.WATER) y--;
     const id = this.world.get(x,y,z);
     return { cell: [x,y,z], neighbor: [x,isPlant(id) ? y : y + 1,z], id };
   }
 
-  draw(p, target) {
+  draw(p, target, _now, _eco, survival) {
     const { canvas, ctx, world, tiles } = this;
     const { w, h, tile, ox, oz } = this.layout(p);
     if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
@@ -464,7 +538,26 @@ class MapRenderer {
         }
       }
     }
-    if (target) {
+    if (survival) {
+      const dark = (1 - daylightAt(survival.clock)) * .65;
+      if (dark > .005) {
+        ctx.fillStyle = `rgba(13,28,60,${dark})`; ctx.fillRect(0,0,w,h);
+        for (const index of world.torches) {
+          const [x,,z] = coordsOf(index), tx = ox+(x+.5)*tile, tz = oz+(z+.5)*tile, radius = tile*3.5;
+          if (tx < -radius || tz < -radius || tx > w+radius || tz > h+radius) continue;
+          const lamp = ctx.createRadialGradient(tx,tz,0,tx,tz,radius);
+          lamp.addColorStop(0, `rgba(247,174,72,${dark*.95})`); lamp.addColorStop(1,'rgba(247,174,72,0)');
+          ctx.fillStyle = lamp; ctx.fillRect(tx-radius,tz-radius,radius*2,radius*2);
+        }
+      }
+      for (const mob of survival.mobs) {
+        const s = tile * .82, mx = ox + mob.x*tile - s/2, mz = oz + mob.z*tile - s/2;
+        ctx.fillStyle = '#14232b99'; ctx.fillRect(mx+1,mz+4,s,s);
+        ctx.drawImage(tiles[TILE.SLIME_FACE],mx,mz,s,s);
+        if (survival.clock < mob.blink) { ctx.fillStyle = '#ecffe78c'; ctx.fillRect(mx,mz,s,s); }
+      }
+    }
+    if (target?.cell) {
       ctx.lineWidth = 2; ctx.strokeStyle = '#f2ffca';
       ctx.strokeRect(ox + target.cell[0] * tile + 1, oz + target.cell[2] * tile + 1, tile - 2, tile - 2);
     }

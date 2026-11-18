@@ -268,3 +268,95 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
 }
 @media (pointer: coarse) { .footer-hint { font-size: 11px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: 0s !important; } }
+
+/* Mode selector, survival HUD and block catalogue. */
+:root { --survival: #ffc285; --survival-soft: #3a2d21; }
+.mode-switch { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 3px; padding: 3px; background: #151910; border: 1px solid #343d2c; border-radius: 7px; }
+.mode-switch button, .inventory-tabs button { display: flex; justify-content: center; align-items: center; gap: 6px; background: transparent; border: 1px solid transparent; border-radius: 5px; min-height: 30px; font-weight: 600; font-size: 12px; color: var(--muted); padding-inline: 5px; white-space: nowrap; }
+.mode-switch button:hover, .inventory-tabs button:hover { color: var(--text); background: #232d20; }
+.mode-switch button[aria-pressed="true"], .inventory-tabs button[aria-pressed="true"] { border-color: #4b5d31; color: var(--lime); background: #2c371f; }
+.mode-switch button[data-mode="survival"][aria-pressed="true"] { color: var(--survival); background: var(--survival-soft); border-color: #69513b; }
+.mode-switch .icon { width: 14px; height: 14px; }
+.mode-help { margin: 6px 0 0; color: var(--muted); font-size: 11px; }
+.inventory-toggle { font-size: 12px; }
+.inventory-toggle .icon { width: 16px; height: 16px; color: #c0d5a3; }
+.inventory-toggle kbd { min-width: 17px; min-height: 18px; font-size: 9px; padding: 0 4px; }
+.game-tag b { font-weight: 500; }
+.is-survival .game-tag span { background: var(--survival); box-shadow: 0 0 7px #ffc28555; }
+.world-clock { position: absolute; top: 44px; right: 13px; display: flex; align-items: center; gap: 6px; pointer-events: none; background: #151e1bca; color: #f2e7d5; border: 1px solid #e2efcc30; border-radius: 5px; padding: 5px 8px; font: 500 10px/1.25 var(--mono); }
+.world-clock .icon { width: 13px; height: 13px; color: var(--survival); }
+.world-clock.is-night .icon { color: #b9cbfe; }
+.vitals { position: relative; display: flex; align-items: center; gap: 8px; padding: 4px 7px; background: #131d14e3; border: 1px solid #85957564; border-radius: 5px; }
+.vitals-divider { width: 1px; height: 13px; background: #8493724d; }
+.vital-meter { display: flex; gap: 2px; color: #ff7771; }
+.vital-meter.food { color: #efb474; }
+.vital-unit { position: relative; width: 12px; height: 12px; image-rendering: pixelated; }
+.vital-unit > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.vital-unit .empty-vital { color: #6e7665; opacity: .49; }
+.vital-unit .fill-vital { clip-path: inset(0 var(--cutoff,0%) 0 0); filter: drop-shadow(0 1px 0 #0c190a); }
+.air-meter { pointer-events: none; position: absolute; width: min(106px,45%); top: -10px; left: 50%; transform: translateX(-50%); height: 6px; padding: 1px; background: #101a21; border: 1px solid #9bc9e18a; border-radius: 2px; }
+.air-meter span, .mine-meter span { display: block; height: 100%; width: var(--percent,100%); background: #96dafa; }
+.mine-meter { pointer-events: none; position: absolute; z-index: 1; left: 50%; top: calc(50% + 17px); transform: translateX(-50%); width: 62px; height: 7px; padding: 1px; background: #151d13da; border: 1px solid #d3e9b682; border-radius: 2px; }
+.mine-meter span { background: var(--lime); }
+.damage-flash { position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 88px 14px #e54342; opacity: 0; }
+.damage-flash.is-hit { animation: hit-flash .38s ease-out; }
+@keyframes hit-flash { from { opacity: .67; } to { opacity: 0; } }
+.viewport.is-dead .damage-flash { opacity: .35; background: #39151555; }
+.viewport.is-dead .start-layer { z-index: 1; }
+.slot-count { position: absolute; bottom: 2px; right: 3px; min-width: 11px; padding: 0 1px; border-radius: 2px; background: #101b10bd; color: #f5f5e6; font: 500 9px/1.2 var(--mono); pointer-events: none; }
+.slot.is-empty { background: #20291d; }
+.slot.is-empty[aria-pressed="true"] { background: #43552a; }
+.slot.is-empty img { opacity: .29; }
+.inventory-dialog { width: min(650px, calc(100% - 32px)); }
+.inventory-tabs { display: flex; align-items: center; gap: 4px; padding: 3px; border-radius: 6px; border: 1px solid #343d2c; background: #151910; margin-top: 12px; }
+.inventory-tabs button { flex: 1; }
+.survival-kit { margin-top: 11px; background: #23291d; border: 1px solid #3b4631; border-radius: 6px; padding: 7px 9px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.survival-kit > div, .survival-kit > div > span { display: flex; gap: 6px; align-items: center; }
+.survival-kit > div > span { flex-direction: column; gap: 1px; align-items: start; }
+.survival-kit small { color: var(--dim); font: 500 9px/1.2 var(--mono); letter-spacing: .08em; }
+.survival-kit strong { font-size: 13px; }
+.survival-kit img { width: 29px; height: 29px; image-rendering: pixelated; }
+.survival-kit .button { min-height: 32px; }
+.survival-kit .button:disabled, .recipe-row button:disabled { cursor: default; opacity: .53; }
+.survival-kit .food-icon { color: var(--survival); width: 14px; height: 14px; stroke: none; }
+.survival-kit kbd { min-width: 17px; min-height: 17px; font-size: 9px; padding: 0 3px; }
+.catalogue-head { display: flex; align-items: center; justify-content: space-between; gap: 9px; margin: 15px 0 10px; }
+.catalogue-head strong { font-size: 15px; }
+.catalogue-head p { color: var(--muted); font-size: 12px; margin-top: 2px; }
+#block-search { min-width: 115px; width: 36%; background: #141a11; border: 1px solid #3f4b35; border-radius: 5px; padding: 7px; color: var(--text); font-size: 12px; }
+.catalogue-grid { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 6px; }
+.catalogue-item { position: relative; padding: 5px 3px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 71px; border: 1px solid #404c35; border-radius: 6px; background: #232a1f; text-align: center; font-size: 10px; line-height: 1.2; }
+.catalogue-item img { width: 34px; height: 34px; image-rendering: pixelated; }
+.catalogue-item[aria-pressed="true"] { border-color: #a2bc69; background: #344326; color: #edf8d4; }
+.catalogue-item:not(:disabled):hover { background: #39482d; border-color: #8fab5e; }
+.catalogue-item:disabled { cursor: default; opacity: .80; }
+.catalogue-item .slot-count { bottom: auto; top: 3px; right: 3px; }
+.catalogue-empty { font-size: 13px; padding: 15px; background: #171d14; color: var(--muted); border: 1px dashed #47553d; border-radius: 6px; }
+.recipe-list { display: grid; gap: 5px; }
+.recipe-row { display: grid; grid-template-columns: 33px 1fr auto; align-items: center; gap: 8px; padding: 6px 7px; border: 1px solid #343e2e; border-radius: 5px; background: #21271d; }
+.recipe-row img { width: 30px; height: 30px; image-rendering: pixelated; }
+.recipe-row strong { font-size: 12px; }
+.recipe-row p { color: var(--muted); font-size: 11px; }
+.recipe-row button { min-height: 28px; padding: 4px 6px; font-size: 11px; }
+.inventory-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 13px; border-top: 1px solid var(--line); padding-top: 9px; font-size: 11px; color: var(--dim); }
+#inventory-status { color: var(--lime); }
+#active-slot { margin-left: auto; text-align: right; }
+@media (max-width: 540px) {
+  .inventory-toggle { gap: 3px; }
+  .inventory-toggle kbd { display: none; }
+  .world-clock { right: 8px; top: 36px; font-size: 9px; }
+  .vital-unit { width: 10px; height: 10px; }
+  .vital-meter { gap: 1px; }
+  .vitals { gap: 5px; }
+  .viewport.is-survival .start-layer { top: 56%; }
+  .viewport.is-survival .touch-controls { bottom: 99px; }
+  .catalogue-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
+}
+@media (max-width: 360px) {
+  .fullscreen span { display: none; }
+  .catalogue-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { .damage-flash.is-hit { animation: none; } }
+
+.aimed-mob .reticle::before, .aimed-mob .reticle::after { background: var(--survival); }
+.viewport.is-dead #play-hint { max-width: min(450px,75vw); white-space: normal; text-align: center; }

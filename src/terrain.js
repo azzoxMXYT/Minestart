@@ -5,8 +5,23 @@ const CHUNK = 16;
 const SEA = 8;
 const DEFAULT_SEED = 84217;
 const REACH = 8.5;
-const ID = Object.freeze({ AIR: 0, GRASS: 1, DIRT: 2, STONE: 3, SAND: 4, WOOD: 5, LEAVES: 6, PLANKS: 7, BRICKS: 8, WATER: 9, BEDROCK: 10, DAISY: 11, POPPY: 12, TUFT: 13 });
-const TILE = Object.freeze({ GRASS: 0, GRASS_EDGE: 1, DIRT: 2, STONE: 3, SAND: 4, RINGS: 5, BARK: 6, LEAVES: 7, PLANKS: 8, BRICKS: 9, WATER: 10, BEDROCK: 11, DAISY: 12, POPPY: 13, TUFT: 14, CLOUD: 15 });
+const WORLD_GENERATION = 2;
+// Keep the original block numbers: every saved edit refers to one of them.
+const ID = Object.freeze({
+  AIR: 0, GRASS: 1, DIRT: 2, STONE: 3, SAND: 4, WOOD: 5, LEAVES: 6, PLANKS: 7, BRICKS: 8,
+  WATER: 9, BEDROCK: 10, DAISY: 11, POPPY: 12, TUFT: 13, COBBLE: 14, SANDSTONE: 15,
+  GRANITE: 16, SLATE: 17, SNOW: 18, ICE: 19, GLASS: 20, PINE_LOG: 21, PINE_PLANKS: 22,
+  TERRACOTTA: 23, RED_WOOL: 24, BLUE_WOOL: 25, COAL_ORE: 26, COPPER_ORE: 27, IRON_ORE: 28,
+  COPPER_BLOCK: 29, IRON_BLOCK: 30, TORCH: 31, BERRY_BUSH: 32, EMPTY_BUSH: 33,
+});
+const TILE = Object.freeze({
+  GRASS: 0, GRASS_EDGE: 1, DIRT: 2, STONE: 3, SAND: 4, RINGS: 5, BARK: 6, LEAVES: 7,
+  PLANKS: 8, BRICKS: 9, WATER: 10, BEDROCK: 11, DAISY: 12, POPPY: 13, TUFT: 14, CLOUD: 15,
+  COBBLE: 16, SANDSTONE: 17, GRANITE: 18, SLATE: 19, SNOW: 20, ICE: 21, GLASS: 22,
+  PINE_RINGS: 23, PINE_BARK: 24, PINE_PLANKS: 25, TERRACOTTA: 26, RED_WOOL: 27, BLUE_WOOL: 28,
+  COAL_ORE: 29, COPPER_ORE: 30, IRON_ORE: 31, COPPER_BLOCK: 32, IRON_BLOCK: 33,
+  TORCH: 34, BERRY_BUSH: 35, EMPTY_BUSH: 36, SLIME_FACE: 37, SLIME_SKIN: 38,
+});
 const BLOCKS = [
   { name: 'Air', top: 0, side: 0 },
   { name: 'Herbe', top: TILE.GRASS, side: TILE.GRASS_EDGE, bottom: TILE.DIRT },
@@ -22,14 +37,37 @@ const BLOCKS = [
   { name: 'Marguerite', top: TILE.DAISY, side: TILE.DAISY },
   { name: 'Coquelicot', top: TILE.POPPY, side: TILE.POPPY },
   { name: 'Hautes herbes', top: TILE.TUFT, side: TILE.TUFT },
+  { name: 'Pavés', top: TILE.COBBLE, side: TILE.COBBLE },
+  { name: 'Grès', top: TILE.SANDSTONE, side: TILE.SANDSTONE },
+  { name: 'Granite', top: TILE.GRANITE, side: TILE.GRANITE },
+  { name: 'Ardoise', top: TILE.SLATE, side: TILE.SLATE },
+  { name: 'Neige', top: TILE.SNOW, side: TILE.SNOW },
+  { name: 'Glace', top: TILE.ICE, side: TILE.ICE },
+  { name: 'Verre', top: TILE.GLASS, side: TILE.GLASS },
+  { name: 'Tronc de pin', top: TILE.PINE_RINGS, side: TILE.PINE_BARK },
+  { name: 'Planches de pin', top: TILE.PINE_PLANKS, side: TILE.PINE_PLANKS },
+  { name: 'Terre cuite', top: TILE.TERRACOTTA, side: TILE.TERRACOTTA },
+  { name: 'Laine rouge', top: TILE.RED_WOOL, side: TILE.RED_WOOL },
+  { name: 'Laine bleue', top: TILE.BLUE_WOOL, side: TILE.BLUE_WOOL },
+  { name: 'Minerai de charbon', top: TILE.COAL_ORE, side: TILE.COAL_ORE },
+  { name: 'Minerai de cuivre', top: TILE.COPPER_ORE, side: TILE.COPPER_ORE },
+  { name: 'Minerai de fer', top: TILE.IRON_ORE, side: TILE.IRON_ORE },
+  { name: 'Bloc de cuivre', top: TILE.COPPER_BLOCK, side: TILE.COPPER_BLOCK },
+  { name: 'Bloc de fer', top: TILE.IRON_BLOCK, side: TILE.IRON_BLOCK },
+  { name: 'Torche', top: TILE.TORCH, side: TILE.TORCH },
+  { name: 'Buisson à baies', top: TILE.BERRY_BUSH, side: TILE.BERRY_BUSH },
+  { name: 'Buisson récolté', top: TILE.EMPTY_BUSH, side: TILE.EMPTY_BUSH },
 ];
 const PALETTE = [ID.GRASS, ID.DIRT, ID.STONE, ID.SAND, ID.WOOD, ID.LEAVES, ID.PLANKS, ID.BRICKS];
-const isPlant = (block) => block >= ID.DAISY;
+const CATALOGUE = [...PALETTE, ...Array.from({ length: ID.BERRY_BUSH - ID.COBBLE + 1 }, (_, i) => ID.COBBLE + i), ID.DAISY, ID.POPPY];
+const isPlant = (block) => (block >= ID.DAISY && block <= ID.TUFT) || (block >= ID.TORCH && block <= ID.EMPTY_BUSH);
 const solid = (block) => block > ID.AIR && block !== ID.WATER && !isPlant(block);
+const opaque = (block) => solid(block) && block !== ID.GLASS;
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 const mix = (a, b, t) => a + (b - a) * t;
 const smooth = (t) => t * t * (3 - 2 * t);
 const indexOf = (x, y, z) => x + z * SIZE + y * AREA;
+const coordsOf = (i) => [i % SIZE, Math.floor(i / AREA), Math.floor(i / SIZE) % SIZE];
 const inside = (x, y, z) => x >= 0 && x < SIZE && y >= 0 && y < HEIGHT && z >= 0 && z < SIZE;
 
 function hash(x, y, z = 0, salt = 0) {
@@ -55,12 +93,14 @@ function worldName(seed) {
 }
 
 class World {
-  constructor(seed = DEFAULT_SEED, edits = []) {
+  constructor(seed = DEFAULT_SEED, edits = [], generation = WORLD_GENERATION) {
     this.seed = seed;
+    this.generation = generation;
     this.blocks = new Uint8Array(AREA * HEIGHT);
     this.surface = new Uint8Array(AREA);
     this.tops = new Uint8Array(AREA);
     this.edits = new Map();
+    this.torches = new Set();
     this.generate();
     this.original = this.blocks.slice();
     // The seed recreates the base map, so only player edits need to be stored.
@@ -70,6 +110,7 @@ class World {
       if (!Number.isInteger(i) || i < AREA || i >= this.blocks.length || !Number.isInteger(id) || id < 0 || id >= BLOCKS.length || id === ID.BEDROCK || id === this.original[i]) continue;
       this.blocks[i] = id;
       this.edits.set(i, id);
+      if (id === ID.TORCH) this.torches.add(i);
     }
     for (let z = 0; z < SIZE; z++) for (let x = 0; x < SIZE; x++) this.refreshTop(x, z);
   }
@@ -89,6 +130,8 @@ class World {
     if (!inside(x, y, z) || y === 0 || !Number.isInteger(id) || id < 0 || id >= BLOCKS.length || id === ID.BEDROCK) return false;
     const i = indexOf(x, y, z);
     if (this.blocks[i] === id) return false;
+    if (this.blocks[i] === ID.TORCH) this.torches.delete(i);
+    if (id === ID.TORCH) this.torches.add(i);
     this.blocks[i] = id;
     if (id === this.original[i]) this.edits.delete(i);
     else this.edits.set(i, id);
@@ -100,6 +143,7 @@ class World {
   generate() {
     const seed = this.seed;
     const classic = seed === DEFAULT_SEED;
+    const rich = this.generation >= 2;
     const shift = classic ? 0 : (hash(seed, 43) - .5) * 15;
     const swell = classic ? 1 : .79 + hash(seed, 94) * .39;
     const basin = new Float32Array(AREA);
@@ -136,6 +180,8 @@ class World {
       const trailX = 52 - (93 - z) * .48 + 1.4 * Math.sin((z - 92) * .34);
       const trail = classic && z > 74 && z < 110 && Math.abs(x - trailX) < 1 + hash(x, z, 1, seed) * .75;
       const depth = 2 + (noise(x / 7, z / 7, seed + 3) > .59 ? 1 : 0);
+      const stonePatch = rich ? noise(x / 5, z / 5, seed + 143) : .5;
+      const snowy = rich && z < 27 && h >= 31 + Math.round(stonePatch * 2);
       for (let y = 0; y <= Math.max(h, SEA); y++) {
         let id;
         if (y === 0) id = ID.BEDROCK;
@@ -144,6 +190,19 @@ class World {
         else if (y === h) id = bareRock ? ID.STONE : trail ? ID.DIRT : ID.GRASS;
         else if (y >= h - depth && !bareRock) id = ID.DIRT;
         else id = ID.STONE;
+        if (rich) {
+          if (snowy && y === h) id = ID.SNOW;
+          if (beach && y === h - 3 && id === ID.STONE) id = ID.SANDSTONE;
+          if (id === ID.STONE) {
+            const a = hash(x >> 1, y >> 1, z >> 1, seed + 67);
+            const b = hash(x, y, z, seed + 28);
+            if (y < h && y > 2 && a < .023 && b > .15) id = ID.COAL_ORE;
+            else if (y < h && y > 3 && y < 24 && a > .973 && b > .26) id = ID.COPPER_ORE;
+            else if (y < h && y < 15 && a > .935 && a < .960 && b > .24) id = ID.IRON_ORE;
+            else if (stonePatch > .74 && y > h - 7 && b > .2) id = ID.GRANITE;
+            else if (stonePatch < .29 && y < h - 4) id = ID.SLATE;
+          }
+        }
         this.blocks[col + y * AREA] = id;
       }
     }
@@ -160,6 +219,21 @@ class World {
       const h = this.surface[x + z * SIZE];
       if (!this.get(x, h + 1, z)) this.raw(x, h + 1, z, id);
     }
+    if (rich) this.growBerries();
+  }
+
+  growBerries() {
+    const plant = (x, z, nearSpawn = false) => {
+      const h = this.surface[x + z * SIZE];
+      const floor = this.get(x, h, z), above = this.get(x, h + 1, z);
+      if (h <= SEA || (floor !== ID.GRASS && floor !== ID.DIRT)) return;
+      if (!above || (nearSpawn && above === ID.TUFT)) this.raw(x, h + 1, z, ID.BERRY_BUSH);
+    };
+    for (let z = 3; z < SIZE - 3; z++) for (let x = 3; x < SIZE - 3; x++) {
+      if (hash(x, z, 57, this.seed) > .990) plant(x, z);
+    }
+    // Find food in the first few steps, even in a random world.
+    for (const [x, z] of [[48, 92], [56, 92], [57, 90], [46, 96], [55, 97]]) plant(x, z, true);
   }
 
   growForest(classic) {
@@ -169,7 +243,7 @@ class World {
       if (base < SEA + 2 || this.get(x, base, z) !== ID.GRASS || trees.some(([tx, tz]) => (x - tx) ** 2 + (z - tz) ** 2 < 23)) return;
       trees.push([x, z]);
       const trunk = (pine ? 7 : 4) + Math.floor(hash(x, z, 81, this.seed) * 3) + boost;
-      for (let y = 1; y <= trunk; y++) this.raw(x, base + y, z, ID.WOOD);
+      for (let y = 1; y <= trunk; y++) this.raw(x, base + y, z, pine && this.generation >= 2 ? ID.PINE_LOG : ID.WOOD);
       const first = pine ? trunk - 5 : trunk - 2;
       for (let y = first; y <= trunk + (pine ? 2 : 1); y++) {
         const d = y - trunk;
@@ -181,6 +255,7 @@ class World {
       }
     };
     if (classic) for (const [x, z, pine, boost] of [[42, 81, false, 1], [64, 80, false, 1], [36, 73, false, 0], [76, 75, true, 0], [72, 67, false, 1], [35, 60, true, 1], [80, 58, false, 1], [66, 34, true, 0], [48, 34, false, 0]]) plant(x, z, pine, boost);
+    if (this.generation >= 2) { plant(60, 96, false); plant(42, 94, true); }
     for (let gz = 4; gz < SIZE - 5; gz += 6) for (let gx = 4; gx < SIZE - 5; gx += 6) {
       const f = noise(gx / 20, gz / 20, this.seed + 99);
       if (hash(gx, gz, 43, this.seed) > .24 + f * .48) continue;
@@ -199,7 +274,7 @@ class World {
         const x = 52 + dx, z = 93 + dz;
         const y = this.tops[x + z * SIZE];
         const id = this.get(x, y, z);
-        if (solid(id) && id !== ID.LEAVES && id !== ID.WOOD && y < HEIGHT - 3) {
+        if (solid(id) && id !== ID.LEAVES && id !== ID.WOOD && id !== ID.PINE_LOG && y < HEIGHT - 3) {
           return { x: x + .5, y: y + 1.001, z: z + .5, yaw: .015, pitch: -.105, vy: 0, grounded: true, flying: false };
         }
       }
@@ -267,6 +342,21 @@ function lookDirection(p) {
 }
 
 // Step exactly between voxel boundaries rather than sampling through a thin block.
+function rayBox(origin, direction, box, reach) {
+  let near = 0, far = reach;
+  for (let i = 0; i < 3; i++) {
+    if (direction[i] === 0) {
+      if (origin[i] < box[i] || origin[i] > box[i + 3]) return Infinity;
+    } else {
+      const a = (box[i] - origin[i]) / direction[i], b = (box[i + 3] - origin[i]) / direction[i];
+      near = Math.max(near, Math.min(a, b));
+      far = Math.min(far, Math.max(a, b));
+      if (near > far) return Infinity;
+    }
+  }
+  return near;
+}
+
 function raycast(world, origin, direction, reach = REACH) {
   const cell = origin.map(Math.floor);
   const step = direction.map(Math.sign);
@@ -274,11 +364,16 @@ function raycast(world, origin, direction, reach = REACH) {
   const next = direction.map((v, i) => v > 0 ? (cell[i] + 1 - origin[i]) / v : v < 0 ? (cell[i] - origin[i]) / v : Infinity);
   let distance = 0;
   let neighbor = null;
-  let plant = null;
   while (distance <= reach) {
     const id = world.get(...cell);
     if (solid(id)) return { cell, neighbor, id, distance };
-    if (isPlant(id) && !plant) plant = { cell: cell.slice(), neighbor: cell.slice(), id, distance };
+    if (isPlant(id)) {
+      const [x,y,z] = cell;
+      const inset = id === ID.TORCH ? .30 : id >= ID.BERRY_BUSH ? .10 : .18;
+      const height = id >= ID.TORCH ? .71 : .92;
+      const plantDistance = rayBox(origin, direction, [x+inset,y,z+inset,x+1-inset,y+height,z+1-inset], reach);
+      if (Number.isFinite(plantDistance)) return { cell, neighbor: cell.slice(), id, distance: plantDistance };
+    }
     const axis = next[0] <= next[1] && next[0] <= next[2] ? 0 : next[1] <= next[2] ? 1 : 2;
     if (!Number.isFinite(next[axis])) break;
     neighbor = cell.slice();
@@ -286,5 +381,5 @@ function raycast(world, origin, direction, reach = REACH) {
     distance = next[axis];
     next[axis] += delta[axis];
   }
-  return plant;
+  return null;
 }
