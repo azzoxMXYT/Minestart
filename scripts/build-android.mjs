@@ -72,7 +72,8 @@ try {
   run(androidTool('zipalign'), ['-c', '4', apk]);
   const metadata = execFileSync(androidTool('aapt2'), ['dump', 'badging', apk], { encoding: 'utf8' });
   if (!metadata.includes("package: name='io.github.azzoxmxyt.minestart'") ||
-      !metadata.includes(`sdkVersion:'${minSdk}'`) || !metadata.includes(`versionName='${version}'`) ||
+      !new RegExp(`^(?:minSdkVersion|sdkVersion):'${minSdk}'$`, 'm').test(metadata) ||
+      !metadata.includes(`versionCode='${versionCode}'`) || !metadata.includes(`versionName='${version}'`) ||
       !metadata.includes(`targetSdkVersion:'${targetSdk}'`) || metadata.includes('android.permission.INTERNET')) {
     console.error(metadata);
     throw new Error('Manifeste Android inattendu.');

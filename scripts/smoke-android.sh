@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+sdk=${ANDROID_HOME:-${ANDROID_SDK_ROOT:?Android SDK path is required}}
+export PATH="$sdk/emulator:$sdk/platform-tools:$sdk/cmdline-tools/latest/bin:$PATH"
 system_image='system-images;android-35;google_apis;x86_64'
+if ! command -v emulator >/dev/null; then sdkmanager --install emulator; fi
 sdkmanager --install "$system_image"
 printf 'no\n' | avdmanager create avd --force --name minestart-ci --package "$system_image"
 sudo chmod a+rw /dev/kvm
