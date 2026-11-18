@@ -1,0 +1,65 @@
+name: Publication Windows
+
+on:
+  workflow_dispatch:
+  push:
+    # Bootstrap this release while the Arena branch is not yet the default branch.
+    branches: [arena/09cef573-minestart]
+    paths: [.github/workflows/windows-release.yml]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: minestart-windows-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Tester le jeu
+        run: npm test
+      - name: Construire les versions Windows
+        shell: pwsh
+        run: |
+          $toolchain = Join-Path $env:RUNNER_TEMP 'minestart-zig'
+          npm install --prefix $toolchain --no-audit --no-fund --no-package-lock --no-save --ignore-scripts @ryoppippi/zig-win32-x64@0.14.0-dev.2456
+          if ($LASTEXITCODE -ne 0) { throw 'Impossible de préparer Zig.' }
+          $env:ZIG = Join-Path $toolchain 'node_modules\@ryoppippi\zig-win32-x64\zig.exe'
+          npm run build:windows
+      - name: Vérifier le lanceur sur Windows
+        shell: pwsh
+        run: |
+          $launcher = Start-Process -FilePath .\release\Minestart.exe -ArgumentList '--prepare' -Wait -PassThru
+          if ($launcher.ExitCode -ne 0) { throw 'Le lanceur n’a pas pu extraire le jeu.' }
+          $localGame = Join-Path $env:LOCALAPPDATA 'Minestart\Minestart.html'
+          if ((Get-FileHash $localGame).Hash -ne (Get-FileHash .\release\Minestart.html).Hash) {
+            throw 'Le jeu extrait par le lanceur est différent du jeu autonome.'
+          }
+      - name: Publier la release GitHub
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $tag = "v$version"
+          $existing = gh release view $tag --json isDraft 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag --draft --target $env:GITHUB_SHA --title "Minestart $version — Windows" --notes-file native/release-notes.md
+          } elseif (($existing | ConvertFrom-Json).isDraft) {
+            gh release edit $tag --target $env:GITHUB_SHA --title "Minestart $version — Windows" --notes-file native/release-notes.md
+          } else {
+            throw "La release $tag est déjà publiée. Incrémente la version avant de republier."
+          }
+          if ($LASTEXITCODE -ne 0) { throw 'Impossible de préparer la release.' }
+          gh release upload $tag release/Minestart.exe release/Minestart-arm64.exe release/Minestart.html release/SHA256SUMS.txt --clobber
+          if ($LASTEXITCODE -ne 0) { throw 'Impossible de joindre les fichiers.' }
+          gh release edit $tag --draft=false --latest
