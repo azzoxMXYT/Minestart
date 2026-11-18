@@ -47,11 +47,17 @@ jobs:
       - name: Vérifier le lanceur sur Windows
         shell: pwsh
         run: |
-          $launcher = Start-Process -FilePath .\release\Minestart.exe -ArgumentList '--prepare' -Wait -PassThru
-          if ($launcher.ExitCode -ne 0) { throw 'Le lanceur n’a pas pu extraire le jeu.' }
-          $localGame = Join-Path $env:LOCALAPPDATA 'Minestart\Minestart.html'
-          if ((Get-FileHash $localGame).Hash -ne (Get-FileHash .\release\Minestart.html).Hash) {
-            throw 'Le jeu extrait par le lanceur est différent du jeu autonome.'
+          try {
+            $exe = (Resolve-Path .\release\Minestart.exe).Path
+            $launcher = Start-Process -FilePath $exe -ArgumentList '--prepare' -Wait -PassThru
+            if ($launcher.ExitCode -ne 0) { throw "Extraction du jeu : code de sortie $($launcher.ExitCode)." }
+            $localGame = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Minestart\Minestart.html'
+            if ((Get-FileHash -LiteralPath $localGame).Hash -ne (Get-FileHash .\release\Minestart.html).Hash) {
+              throw 'Le jeu extrait par le lanceur est différent du jeu autonome.'
+            }
+          } catch {
+            Write-Host "::error::$($_.Exception.Message)"
+            throw
           }
       - name: Publier la release GitHub
         shell: pwsh

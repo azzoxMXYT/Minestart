@@ -39,28 +39,28 @@ static BOOL already_current(PCWSTR path, const BYTE *payload, DWORD size) {
     return equal;
 }
 
-static BOOL prepare_game(HINSTANCE instance, PCWSTR directory, PCWSTR game) {
+static int prepare_game(HINSTANCE instance, PCWSTR directory, PCWSTR game) {
     HRSRC resource = FindResourceW(instance, MAKEINTRESOURCEW(IDR_GAME), RT_RCDATA);
-    if (!resource) return FALSE;
+    if (!resource) return 11;
     DWORD size = SizeofResource(instance, resource);
     HGLOBAL loaded = LoadResource(instance, resource);
     const BYTE *payload = loaded ? LockResource(loaded) : NULL;
-    if (!payload || size == 0) return FALSE;
-    if (already_current(game, payload, size)) return TRUE;
+    if (!payload || size == 0) return 12;
+    if (already_current(game, payload, size)) return 0;
 
     // Write then replace, so a failed write cannot leave a partially extracted game.
     WCHAR temp[MAX_PATH];
-    if (!GetTempFileNameW(directory, L"MIN", 0, temp)) return FALSE;
+    if (!GetTempFileNameW(directory, L"MIN", 0, temp)) return 13;
     HANDLE file = CreateFileW(temp, GENERIC_WRITE, 0, NULL, TRUNCATE_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    BOOL ok = FALSE;
+    int code = 14;
     if (file != INVALID_HANDLE_VALUE) {
         DWORD written = 0;
-        ok = WriteFile(file, payload, size, &written, NULL) && written == size && FlushFileBuffers(file);
+        BOOL ok = WriteFile(file, payload, size, &written, NULL) && written == size && FlushFileBuffers(file);
         CloseHandle(file);
-        if (ok) ok = MoveFileExW(temp, game, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH);
+        if (ok) code = MoveFileExW(temp, game, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) ? 0 : 15;
     }
-    if (!ok) DeleteFileW(temp);
-    return ok;
+    if (code != 0) DeleteFileW(temp);
+    return code;
 }
 
 /* Use the Edge installation already on this PC for a window without browser tabs.
@@ -99,9 +99,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE previous, PWSTR command, int s
     BOOL prepare_only = lstrcmpW(command, L"--prepare") == 0;
     HRESULT com = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
     WCHAR directory[MAX_PATH], game[MAX_PATH];
-    int code = 0;
-    if (!game_paths(directory, game) || !prepare_game(instance, directory, game)) {
-        code = 1;
+    int code = game_paths(directory, game) ? prepare_game(instance, directory, game) : 10;
+    if (code != 0) {
         if (!prepare_only) MessageBoxW(NULL, L"Impossible de préparer Minestart dans ton dossier utilisateur. Si ce poste est géré, demande conseil à l’administrateur.",
                                        L"Minestart", MB_OK | MB_ICONERROR);
     } else if (!prepare_only && !open_app_window(game) &&
