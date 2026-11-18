@@ -73,7 +73,10 @@ try {
   const metadata = execFileSync(androidTool('aapt2'), ['dump', 'badging', apk], { encoding: 'utf8' });
   if (!metadata.includes("package: name='io.github.azzoxmxyt.minestart'") ||
       !metadata.includes(`sdkVersion:'${minSdk}'`) || !metadata.includes(`versionName='${version}'`) ||
-      metadata.includes('android.permission.INTERNET')) throw new Error('Manifeste Android inattendu.');
+      !metadata.includes(`targetSdkVersion:'${targetSdk}'`) || metadata.includes('android.permission.INTERNET')) {
+    console.error(metadata);
+    throw new Error('Manifeste Android inattendu.');
+  }
   if (execFileSync('unzip', ['-p', apk, 'assets/index.html'], { encoding: 'utf8' }) !== game) {
     throw new Error('Le jeu embarqué ne correspond pas aux sources.');
   }
