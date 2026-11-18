@@ -2,9 +2,15 @@
 
 Minestart est un jeu de construction léger en 3D. En **Créatif**, tu disposes de 29 blocs et décorations en quantité illimitée. En **Survie**, tu dois récolter tes matériaux, fabriquer tes outils et te mettre à l’abri des gelées nocturnes.
 
+## Versions mobiles
+
+- **Android 8+** : prends `Minestart.apk` dans [la release mobile](https://github.com/azzoxMXYT/Minestart/releases/tag/mobile-v1.2.0). Ouvre le fichier sur ton appareil. Le jeu est embarqué et ne demande aucune connexion ni permission Internet. Un appareil administré peut bloquer l’installation des APK hors Google Play.
+- **iPhone et iPad (iOS/iPadOS 16+)** : ouvre le site Minestart en HTTPS dans Safari. Choisis **Partager → Sur l’écran d’accueil → Ajouter**. Ouvre ensuite l’icône une première fois en ligne et attends **Prêt hors ligne**. C’est une application web installable (PWA), pas une `.ipa` ni une publication App Store.
+- Glisse sur le paysage pour regarder et utilise les flèches pour avancer. Appuie sur **Miner**, **Poser** ou **Saut**. En Survie, maintiens **Miner** et utilise **Poser** sur un buisson pour récolter des baies, puis l’icône baie pour manger. L’inventaire et la fabrication sont en haut de la vue. Les mondes restent sur l’appareil, sans synchronisation entre versions.
+
 ## Version Windows (.exe)
 
-Dans [la dernière release](https://github.com/azzoxMXYT/Minestart/releases/latest), télécharge **`Minestart.exe`** pour un PC Windows 10 ou 11 64 bits (Intel ou AMD). Pour un PC Windows avec processeur ARM, choisis **`Minestart-arm64.exe`**.
+Dans [la release Windows](https://github.com/azzoxMXYT/Minestart/releases/tag/v1.1.0), télécharge **`Minestart.exe`** pour un PC Windows 10 ou 11 64 bits (Intel ou AMD). Pour un PC Windows avec processeur ARM, choisis **`Minestart-arm64.exe`**.
 
 Double-clique sur le fichier. Le lanceur embarque le jeu complet, sans installation, sans connexion et sans droits administrateur. Il ouvre Minestart dans une fenêtre Edge dédiée si Edge est installé, sinon dans le navigateur par défaut. Il conserve le fichier du jeu dans `%LOCALAPPDATA%\Minestart` pour garder une adresse stable pour les sauvegardes.
 
@@ -42,10 +48,23 @@ Si le navigateur ne capture pas le pointeur, fais glisser la souris pour regarde
 Le jeu utilise Canvas et WebGL, sans dépendance à installer. Les textures et les mondes sont générés par le jeu. Le HTML, le CSS, les scripts et les polices sont réunis dans `index.html` : ce seul fichier suffit hors ligne.
 
 ```sh
-npm run build   # Régénérer index.html à partir de src/
-npm test        # Tester le terrain, la physique et le mode Survie
-npm start       # Ouvrir une prévisualisation sur le port 3000
+npm run build           # Régénérer le HTML autonome et docs/ (PWA)
+npm test                # Tester le jeu et vérifier les fichiers générés
+npm start               # Version web ; la PWA est sous /mobile/
+npm run start:mobile    # Servir la PWA à la racine
 ```
+
+### Publier le site mobile (iPhone)
+
+Le dossier `docs/` est prêt à servir : aucun backend n’est nécessaire. Sur GitHub, ouvre **Settings → Pages → Deploy from a branch**, sélectionne `arena/09cef573-minestart` et **`/docs`**, puis **Save**. Après le déploiement, l’adresse sera `https://azzoxmxyt.github.io/Minestart/`. Tu peux aussi extraire `Minestart-PWA.zip` sur un autre hébergeur statique HTTPS. Un fichier `index.html` ouvert directement ne suffit pas pour installer une PWA : le navigateur doit pouvoir charger le service worker sur le site.
+
+### Fabriquer l’APK
+
+Sur Linux ou macOS, utilise Node.js 22, un JDK (17+), `zip` et `unzip`, ainsi que le SDK Android (plateforme 36, build-tools 36.0.0). Donne le chemin du SDK dans `ANDROID_HOME`, puis lance `npm run build:android`. Le script vérifie la signature, le manifeste et le jeu intégré dans `release/Minestart.apk`.
+
+Pour des mises à jour sans désinstallation, signe les versions avec le même keystore PKCS#12 : pointe `MINESTART_ANDROID_KEYSTORE` vers son fichier, définis `MINESTART_ANDROID_PASSWORD` et utilise l’alias `minestart` (ou `MINESTART_ANDROID_KEY_ALIAS` localement). En CI, les secrets facultatifs `MINESTART_ANDROID_KEYSTORE_B64` et `MINESTART_ANDROID_PASSWORD` permettent la même signature. Sans keystore, le script signe avec une clé ponctuelle : un APK signé autrement ne pourra pas être installé par-dessus. Ne versionne pas la clé.
+
+### Fabriquer la release Windows
 
 Pour fabriquer la release Windows, utilise [Zig](https://github.com/ziglang/zig) avec `zig rc` et la compilation croisée MinGW (testé avec `0.14.0-dev.2456`), puis lance :
 

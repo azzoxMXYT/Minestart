@@ -1,0 +1,87 @@
+/* Installed-app chrome and touch controls. Desktop keeps the original layout. */
+.mobile-modes, .touch-command-summary, .touch-guide { display: none; }
+.app-action { gap: 6px; min-height: 36px; }
+.app-state { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font: 500 10px/1.45 var(--mono); letter-spacing: .025em; }
+.app-state::before { content: ''; width: 5px; height: 5px; border-radius: 1px; background: #9a9d89; }
+.app-state[data-ready]::before { background: var(--lime); box-shadow: 0 0 7px #caed774d; }
+.intro .app-state { margin-top: 8px; }
+.app-instructions { color: var(--text); margin: 12px 0; padding-left: 23px; }
+.app-instructions li { padding: 4px 0; }
+.app-note { color: var(--muted); font-size: 13px; }
+
+.is-touch body {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.is-touch .tap-target, .is-touch .game-actions > button, .is-touch .dialog-close { min-width: 44px; min-height: 44px; }
+.is-touch .mobile-modes { display: grid; margin: 8px 9px; }
+.is-touch .mobile-modes button { min-height: 38px; font-size: 13px; }
+.is-touch .world-panel .mode-switch, .is-touch .desktop-guide, .is-touch .game-actions kbd,
+.is-touch #eat kbd, .is-touch #fullscreen { display: none; }
+.is-touch .touch-guide, .is-touch .touch-command-summary { display: block; }
+.touch-command-summary { color: var(--muted); font-size: 13px; margin: 11px 0 2px; }
+.touch-command-summary b { color: var(--text); }
+.is-touch #block-search, .is-touch #seed-input { font-size: 16px; }
+.is-touch .dialog-close { margin-right: -6px; }
+.is-touch dialog { max-height: min(calc(100% - 32px), calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px)); }
+.is-touch dialog::backdrop { backdrop-filter: none; }
+.is-touch .inventory-tabs button, .is-touch .recipe-row button, .is-touch #eat { min-height: 38px; }
+.is-touch .guide-link { min-height: 44px; }
+.is-touch .touch-tool { color: var(--survival); }
+.is-touch .touch-tool[aria-pressed] { color: var(--muted); }
+.is-touch .touch-tool[aria-pressed="true"] { color: var(--lime); background: #344425; }
+.is-touch .touch-tool .icon { width: 17px; height: 17px; }
+
+.touch-play, .touch-play body { overflow: hidden; overscroll-behavior: none; }
+.touch-play .game-card {
+  position: fixed; z-index: 10; inset: 0; width: 100%; height: 100%; height: 100dvh;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background: var(--bar); border: 0; border-radius: 0; user-select: none; -webkit-user-select: none;
+  -webkit-touch-callout: none; touch-action: none;
+}
+.touch-play .game-card .mobile-modes, .touch-play .game-footer { display: none; }
+.touch-play .game-bar { min-height: 49px; flex: none; padding-inline: 10px; }
+.touch-play .viewport { height: 0; flex: 1 1 auto; }
+.touch-play .inventory { bottom: 10px; }
+.touch-play .toast { max-width: calc(100% - 24px); }
+.is-touch .touch-controls {
+  --touch-size: clamp(41px, 12vw, 48px);
+  inset: auto 10px 84px;
+}
+.is-touch .is-survival .touch-controls { bottom: 114px; }
+.is-touch .dpad, .is-touch .touch-actions { gap: 4px; grid-template-rows: repeat(2,var(--touch-size)); }
+.is-touch .dpad { grid-template-columns: repeat(3,var(--touch-size)); }
+.is-touch .touch-actions { display: grid; grid-template-columns: repeat(2,var(--touch-size)); }
+.is-touch .touch-actions [data-act="jump"] { grid-area: 1 / 2; }
+.is-touch .touch-actions [data-act="down"] { grid-area: 1 / 1; }
+.is-touch .touch-actions [data-act="break"] { grid-area: 2 / 1; }
+.is-touch .touch-actions [data-act="place"] { grid-area: 2 / 2; }
+.is-touch .touch-controls button {
+  width: var(--touch-size); height: var(--touch-size); border-radius: 8px; border-color: #a8c88d8c;
+  -webkit-touch-callout: none; user-select: none; -webkit-user-select: none;
+}
+.is-touch .dpad button { font-size: 14px; }
+.is-touch .touch-actions button { grid-template-rows: auto auto; align-content: center; gap: 2px; }
+.is-touch .touch-actions .icon { width: 17px; height: 17px; }
+.is-touch .touch-actions span { font: 600 9px/1 var(--body); }
+.is-touch #play-hint { max-width: min(430px, 82vw); white-space: normal; text-align: center; }
+
+@media (orientation: landscape) and (min-width: 700px) {
+  .touch-play .touch-controls, .touch-play .is-survival .touch-controls { bottom: 12px; }
+  .touch-play .slot { width: clamp(29px, 4vw, 39px); height: clamp(33px, 4vw, 39px); }
+  .touch-play .hotbar { gap: 3px; }
+  .touch-play .slot img { width: 23px; height: 23px; }
+}
+@media (max-width: 540px) {
+  .is-touch .intro { padding-block: 16px 13px; }
+  .is-touch .topbar-inner { height: 55px; }
+  .is-touch .game-actions { gap: 0; }
+  .is-touch .game-actions .inventory-toggle { padding-inline: 6px; }
+  .is-touch .game-actions .inventory-toggle span { font-size: 12px; }
+  .is-touch .game-card:not(.is-playing) .viewport { height: clamp(299px, 82vw, 434px); }
+  .is-touch .game-footer { min-height: 37px; }
+  .is-touch .touch-tool { min-width: 41px; }
+}
+@media (max-width: 350px) {
+  .touch-play .game-heading .icon { display: none; }
+  .touch-play .game-heading { letter-spacing: .02em; }
+}

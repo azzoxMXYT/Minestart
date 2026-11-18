@@ -4,3 +4,9 @@ node_modules/
 
 /release/
 /.zig-cache/
+
+# Android build output and private signing keys.
+*.apk
+*.keystore
+*.jks
+*.p12

@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" data-edition="web">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#151813">
   <meta name="description" content="Minestart, un jeu de blocs léger et gratuit. Explore et construis dans ton navigateur, sans compte ni installation.">
   <title>Minestart — Terrain de jeu</title>
@@ -652,6 +652,94 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
 
 .aimed-mob .reticle::before, .aimed-mob .reticle::after { background: var(--survival); }
 .viewport.is-dead #play-hint { max-width: min(450px,75vw); white-space: normal; text-align: center; }
+
+/* Installed-app chrome and touch controls. Desktop keeps the original layout. */
+.mobile-modes, .touch-command-summary, .touch-guide { display: none; }
+.app-action { gap: 6px; min-height: 36px; }
+.app-state { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font: 500 10px/1.45 var(--mono); letter-spacing: .025em; }
+.app-state::before { content: ''; width: 5px; height: 5px; border-radius: 1px; background: #9a9d89; }
+.app-state[data-ready]::before { background: var(--lime); box-shadow: 0 0 7px #caed774d; }
+.intro .app-state { margin-top: 8px; }
+.app-instructions { color: var(--text); margin: 12px 0; padding-left: 23px; }
+.app-instructions li { padding: 4px 0; }
+.app-note { color: var(--muted); font-size: 13px; }
+
+.is-touch body {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.is-touch .tap-target, .is-touch .game-actions > button, .is-touch .dialog-close { min-width: 44px; min-height: 44px; }
+.is-touch .mobile-modes { display: grid; margin: 8px 9px; }
+.is-touch .mobile-modes button { min-height: 38px; font-size: 13px; }
+.is-touch .world-panel .mode-switch, .is-touch .desktop-guide, .is-touch .game-actions kbd,
+.is-touch #eat kbd, .is-touch #fullscreen { display: none; }
+.is-touch .touch-guide, .is-touch .touch-command-summary { display: block; }
+.touch-command-summary { color: var(--muted); font-size: 13px; margin: 11px 0 2px; }
+.touch-command-summary b { color: var(--text); }
+.is-touch #block-search, .is-touch #seed-input { font-size: 16px; }
+.is-touch .dialog-close { margin-right: -6px; }
+.is-touch dialog { max-height: min(calc(100% - 32px), calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px)); }
+.is-touch dialog::backdrop { backdrop-filter: none; }
+.is-touch .inventory-tabs button, .is-touch .recipe-row button, .is-touch #eat { min-height: 38px; }
+.is-touch .guide-link { min-height: 44px; }
+.is-touch .touch-tool { color: var(--survival); }
+.is-touch .touch-tool[aria-pressed] { color: var(--muted); }
+.is-touch .touch-tool[aria-pressed="true"] { color: var(--lime); background: #344425; }
+.is-touch .touch-tool .icon { width: 17px; height: 17px; }
+
+.touch-play, .touch-play body { overflow: hidden; overscroll-behavior: none; }
+.touch-play .game-card {
+  position: fixed; z-index: 10; inset: 0; width: 100%; height: 100%; height: 100dvh;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background: var(--bar); border: 0; border-radius: 0; user-select: none; -webkit-user-select: none;
+  -webkit-touch-callout: none; touch-action: none;
+}
+.touch-play .game-card .mobile-modes, .touch-play .game-footer { display: none; }
+.touch-play .game-bar { min-height: 49px; flex: none; padding-inline: 10px; }
+.touch-play .viewport { height: 0; flex: 1 1 auto; }
+.touch-play .inventory { bottom: 10px; }
+.touch-play .toast { max-width: calc(100% - 24px); }
+.is-touch .touch-controls {
+  --touch-size: clamp(41px, 12vw, 48px);
+  inset: auto 10px 84px;
+}
+.is-touch .is-survival .touch-controls { bottom: 114px; }
+.is-touch .dpad, .is-touch .touch-actions { gap: 4px; grid-template-rows: repeat(2,var(--touch-size)); }
+.is-touch .dpad { grid-template-columns: repeat(3,var(--touch-size)); }
+.is-touch .touch-actions { display: grid; grid-template-columns: repeat(2,var(--touch-size)); }
+.is-touch .touch-actions [data-act="jump"] { grid-area: 1 / 2; }
+.is-touch .touch-actions [data-act="down"] { grid-area: 1 / 1; }
+.is-touch .touch-actions [data-act="break"] { grid-area: 2 / 1; }
+.is-touch .touch-actions [data-act="place"] { grid-area: 2 / 2; }
+.is-touch .touch-controls button {
+  width: var(--touch-size); height: var(--touch-size); border-radius: 8px; border-color: #a8c88d8c;
+  -webkit-touch-callout: none; user-select: none; -webkit-user-select: none;
+}
+.is-touch .dpad button { font-size: 14px; }
+.is-touch .touch-actions button { grid-template-rows: auto auto; align-content: center; gap: 2px; }
+.is-touch .touch-actions .icon { width: 17px; height: 17px; }
+.is-touch .touch-actions span { font: 600 9px/1 var(--body); }
+.is-touch #play-hint { max-width: min(430px, 82vw); white-space: normal; text-align: center; }
+
+@media (orientation: landscape) and (min-width: 700px) {
+  .touch-play .touch-controls, .touch-play .is-survival .touch-controls { bottom: 12px; }
+  .touch-play .slot { width: clamp(29px, 4vw, 39px); height: clamp(33px, 4vw, 39px); }
+  .touch-play .hotbar { gap: 3px; }
+  .touch-play .slot img { width: 23px; height: 23px; }
+}
+@media (max-width: 540px) {
+  .is-touch .intro { padding-block: 16px 13px; }
+  .is-touch .topbar-inner { height: 55px; }
+  .is-touch .game-actions { gap: 0; }
+  .is-touch .game-actions .inventory-toggle { padding-inline: 6px; }
+  .is-touch .game-actions .inventory-toggle span { font-size: 12px; }
+  .is-touch .game-card:not(.is-playing) .viewport { height: clamp(299px, 82vw, 434px); }
+  .is-touch .game-footer { min-height: 37px; }
+  .is-touch .touch-tool { min-width: 41px; }
+}
+@media (max-width: 350px) {
+  .touch-play .game-heading .icon { display: none; }
+  .touch-play .game-heading { letter-spacing: .02em; }
+}
 </style>
 </head>
 <body>
@@ -683,6 +771,8 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
     <symbol id="i-jump" viewBox="0 0 24 24"><path d="M12 17V4m-5 5 5-5 5 5M5 21h14"/></symbol>
+    <symbol id="i-fly" viewBox="0 0 24 24"><path d="m3 12 9-7 9 7M6 16l6-5 6 5m-6-4v8"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v16m-5-5 5 5 5-5"/></symbol>
     <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14m6-14v14" stroke-width="2.8"/></symbol>
     <symbol id="i-bag" viewBox="0 0 24 24"><path d="M8 7V5a4 4 0 0 1 8 0v2M5 7h14l2 13H3zM8 11h8m-8 4h8"/></symbol>
     <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 4-3.3 7-8 9-4.7-2-8-5-8-9V6z"/><path d="M12 7v9m-3-6h6"/></symbol>
@@ -700,8 +790,7 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
         <span class="edition">ÉDITION WEB</span>
       </div>
       <a class="button download" id="download" href="./index.html" download="Minestart.html" title="Télécharger le jeu pour y jouer sans Internet">
-        <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
-        <span>Télécharger</span>
+        <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span>Télécharger</span>
       </a>
     </div>
   </header>
@@ -721,10 +810,16 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
         <div class="game-bar">
           <div class="game-heading"><svg class="icon" aria-hidden="true"><use href="#i-screen"/></svg><span id="view-label">Vue du monde</span></div>
           <div class="game-actions">
+            <button class="bare-button touch-tool" id="touch-fly" type="button" aria-label="Vol créatif" title="Vol créatif" aria-pressed="false" hidden><svg class="icon" aria-hidden="true"><use href="#i-fly"/></svg></button>
+            <button class="bare-button touch-tool" id="touch-eat" type="button" aria-label="Manger une baie" title="Manger une baie" hidden><svg class="icon" aria-hidden="true"><use href="#i-food-pixel"/></svg></button>
             <button class="bare-button pause" id="pause" type="button" aria-label="Mettre en pause" title="Mettre en pause (Échap)" hidden><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg></button>
             <button class="bare-button inventory-toggle" id="open-inventory" type="button" aria-label="Inventaire (E)"><svg class="icon" aria-hidden="true"><use href="#i-bag"/></svg><span>Inventaire</span><kbd>E</kbd></button>
             <button class="bare-button fullscreen" id="fullscreen" type="button" aria-pressed="false"><svg class="icon" aria-hidden="true"><use id="fullscreen-icon" href="#i-expand"/></svg><span id="fullscreen-label">Plein écran</span></button>
           </div>
+        </div>
+        <div class="mode-switch mobile-modes" role="group" aria-label="Mode de jeu">
+          <button type="button" data-mode="creative" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-blocks"/></svg>Créatif</button>
+          <button type="button" data-mode="survival" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>Survie</button>
         </div>
         <div class="viewport" id="viewport">
           <canvas id="scene" tabindex="0" aria-label="Monde de blocs interactif"></canvas>
@@ -751,9 +846,10 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
               <button type="button" data-move="right" aria-label="Aller à droite">▶</button>
             </div>
             <div class="touch-actions">
-              <button type="button" data-act="break" aria-label="Casser un bloc"><svg class="icon" aria-hidden="true"><use href="#i-minus"/></svg></button>
-              <button type="button" data-act="place" aria-label="Poser un bloc"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></button>
-              <button type="button" data-act="jump" aria-label="Sauter"><svg class="icon" aria-hidden="true"><use href="#i-jump"/></svg></button>
+              <button type="button" data-act="break" aria-label="Casser un bloc"><svg class="icon" aria-hidden="true"><use href="#i-minus"/></svg><span>Miner</span></button>
+              <button type="button" data-act="place" aria-label="Poser un bloc"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg><span>Poser</span></button>
+              <button type="button" data-act="jump" aria-label="Sauter"><svg class="icon" aria-hidden="true"><use href="#i-jump"/></svg><span>Saut</span></button>
+              <button type="button" data-act="down" aria-label="Descendre" hidden><svg class="icon" aria-hidden="true"><use href="#i-down"/></svg><span>Bas</span></button>
             </div>
           </div>
           <div class="inventory">
@@ -790,7 +886,8 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
 
         <section class="panel controls-panel" aria-labelledby="controls-title">
           <div class="section-kicker"><span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-keyboard"/></svg></span><h2 id="controls-title">Commandes</h2></div>
-          <dl class="controls">
+          <p class="touch-command-summary">Utilise les flèches pour avancer, glisse pour regarder, puis touche <b>Miner</b> ou <b>Poser</b>.</p>
+          <dl class="controls desktop-guide">
             <div><dt>Se déplacer</dt><dd class="key-group"><kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd></dd></div>
             <div><dt>Sauter</dt><dd><kbd>Espace</kbd></dd></div>
             <div><dt>Casser un bloc</dt><dd class="mouse-label"><svg class="icon" aria-hidden="true"><use href="#i-mouse-l"/></svg><span id="mine-command">Clic gauche</span></dd></div>
@@ -817,7 +914,7 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
       <button type="submit" class="bare-button dialog-close" aria-label="Fermer"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
     </form>
     <p class="dialog-copy" id="guide-copy">Vise un bloc avec la croix au centre de l’écran.</p>
-    <dl class="controls guide-controls">
+    <dl class="controls guide-controls desktop-guide">
       <div><dt>Se déplacer</dt><dd><kbd>ZQSD</kbd> <span>ou</span> <kbd>WASD</kbd></dd></div>
       <div id="guide-look"><dt>Regarder autour de soi</dt><dd>Souris ou flèches</dd></div>
       <div><dt>Sauter / nager</dt><dd><kbd>Espace</kbd></dd></div>
@@ -831,7 +928,16 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
       <div><dt>Choisir un bloc</dt><dd><kbd>1</kbd> – <kbd>8</kbd> ou molette</dd></div>
       <div><dt>Mettre en pause</dt><dd><kbd>Échap</kbd></dd></div>
     </dl>
-    <div class="eco-option" id="eco-option"><div><label for="eco">Mode éco</label><p>Réduit la définition sur les ordinateurs plus lents.</p></div><input type="checkbox" id="eco" role="switch"></div>
+    <dl class="controls guide-controls touch-guide">
+      <div><dt>Se déplacer</dt><dd>Flèches à gauche</dd></div>
+      <div><dt>Sauter / nager</dt><dd>Bouton Saut</dd></div>
+      <div id="guide-touch-fly"><dt>Voler (Créatif)</dt><dd>Bouton de vol, puis Haut / Bas</dd></div>
+      <div><dt>Casser / poser</dt><dd id="guide-touch-mine">Boutons Miner / Poser</dd></div>
+      <div id="guide-touch-food" hidden><dt>Récolter / manger</dt><dd>Poser sur un buisson / icône baie</dd></div>
+      <div><dt>Choisir un bloc</dt><dd>Touche la barre rapide</dd></div>
+      <div><dt>Fabriquer</dt><dd>Inventaire → Fabrication (Survie)</dd></div>
+    </dl>
+    <div class="eco-option" id="eco-option"><div><label for="eco">Mode éco</label><p>Réduit la définition et la fréquence d’affichage.</p></div><input type="checkbox" id="eco" role="switch"></div>
   </dialog>
 
   <dialog id="world-dialog" aria-labelledby="new-title">
@@ -2513,7 +2619,7 @@ function refreshInventory() {
     }
   }
   $('catalogue-title').textContent = inSurvival ? 'Matériaux récoltés' : `${CATALOGUE.length} blocs et décorations`;
-  const hint = `Clique sur un bloc pour l’assigner à la touche ${selection + 1}.`;
+  const hint = usingTouch ? `Touche un bloc pour l’ajouter à l’emplacement ${selection + 1}.` : `Clique sur un bloc pour l’assigner à la touche ${selection + 1}.`;
   $('catalogue-copy').textContent = inSurvival ? `${hint} Récolte d’abord tes matériaux.` : hint;
   const query = searchName($('block-search').value.trim());
   let visible = 0;
@@ -2526,14 +2632,17 @@ function refreshInventory() {
     if (placeable) button.setAttribute('aria-pressed', String(id === hotSlots[selection]));
   }
   $('catalogue-empty').hidden = visible > 0;
-  $('catalogue-empty').textContent = query ? 'Aucun matériau ne correspond à cette recherche.' : 'Ton sac est vide. Maintiens le clic gauche sur un bloc pour le récolter.';
+  $('catalogue-empty').textContent = query ? 'Aucun matériau ne correspond à cette recherche.'
+    : usingTouch ? 'Ton sac est vide. Vise un bloc et maintiens Miner pour le récolter.'
+    : 'Ton sac est vide. Maintiens le clic gauche sur un bloc pour le récolter.';
 }
 
 const $ = (id) => document.getElementById(id);
 const card = $('game-card'), viewport = $('viewport'), hotbar = $('hotbar');
 const play = $('play'), guide = $('guide-dialog'), worldDialog = $('world-dialog');
 const eco = $('eco'), seedInput = $('seed-input');
-const inventoryDialog = $('inventory-dialog');
+const inventoryDialog = $('inventory-dialog'), installDialog = $('install-dialog');
+const appEdition = document.documentElement.dataset.edition;
 const STORAGE = 'minestart:2', LEGACY_STORAGE = 'minestart:1';
 const safeSeed = (value) => Number.isInteger(value) && value >= 0 && value < 1000000;
 const keys = new Set();
@@ -2549,7 +2658,7 @@ let player, world, survival, selection = 0, hotSlots = [...PALETTE];
 let mode = GAME_MODE.CREATIVE, savedWorlds = {};
 let miningPointer = null, mineKey = '', mineWork = 0;
 let lastVitals = '', lastClock = '', lastLight = -1, lastWorldDraw = 0, lastCheckpoint = 0;
-let playing = false, started = false, pointerCaptured = false, drag = null, usingTouch = coarse.matches;
+let playing = false, started = false, pointerCaptured = false, drag = null, usingTouch = coarse.matches || appEdition === 'android';
 let lastSpace = -Infinity, lockTime = 0;
 let frameRequest = 0, lastFrame = 0, forceDraw = true;
 let lastPosition = '', renderedPose = [], renderedTarget = '';
@@ -2682,6 +2791,8 @@ function updateVitals() {
 
 function updateUI() {
   const map = !renderer.is3D, dead = survival?.dead;
+  document.documentElement.classList.toggle('is-touch', usingTouch);
+  document.documentElement.classList.toggle('touch-play', playing && usingTouch);
   viewport.classList.toggle('is-survival', Boolean(survival));
   viewport.classList.toggle('is-dead', Boolean(dead));
   $('vitals').hidden = !survival;
@@ -2701,16 +2812,28 @@ function updateUI() {
   viewport.querySelector('.reticle').hidden = map;
   $('pause').hidden = !playing;
   $('touch-controls').hidden = !(playing && usingTouch);
+  $('touch-fly').hidden = !(playing && usingTouch && !map && !survival);
+  $('touch-fly').setAttribute('aria-pressed', String(Boolean(player?.flying)));
+  $('touch-eat').hidden = !(playing && usingTouch && survival);
+  const jump = viewport.querySelector('[data-act="jump"]');
+  jump.querySelector('span').textContent = player?.flying ? 'Haut' : 'Saut';
+  jump.setAttribute('aria-label', player?.flying ? 'Monter' : 'Sauter');
+  viewport.querySelector('[data-act="down"]').hidden = !player?.flying;
+  $('guide-touch-fly').hidden = map || Boolean(survival);
+  $('guide-touch-food').hidden = !survival;
+  $('guide-touch-mine').textContent = survival ? 'Maintiens Miner / touche Poser' : 'Boutons Miner / Poser';
   $('start-layer').hidden = playing;
   $('play-label').textContent = dead ? 'Réapparaître' : started ? 'Reprendre' : 'Jouer';
-  $('play-hint').textContent = dead ? `${survival.why || 'Tu as perdu ta vie.'} Ton sac est conservé.` : map ? 'Vue 2D · Vise les blocs avec le curseur' : started ? 'Retour dans ton monde' : survival ? 'Récolte du bois pour fabriquer une pioche.' : usingTouch ? 'Touche pour entrer dans le monde' : 'Clique pour entrer dans le monde';
+  $('play-hint').textContent = dead ? `${survival.why || 'Tu as perdu ta vie.'} Ton sac est conservé.` : map ? (usingTouch ? 'Vue 2D · Touche un bloc pour le viser' : 'Vue 2D · Vise les blocs avec le curseur') : started ? 'Retour dans ton monde' : survival ? 'Récolte du bois pour commencer.' : usingTouch ? 'Touche pour jouer' : 'Clique pour entrer dans le monde';
   const hint = $('footer-hint');
   if (usingTouch) hint.textContent = map ? 'Touche un bloc pour le viser' : 'Glisse pour regarder';
   else {
     const kbd = document.createElement('kbd'); kbd.textContent = 'Échap';
     hint.replaceChildren(kbd, document.createTextNode(map || (playing && !pointerCaptured) ? ' Mettre en pause' : ' Libérer la souris'));
   }
-  $('guide-copy').textContent = map ? 'WebGL est indisponible. En vue 2D, vise un bloc à proximité avec le curseur.' : 'Vise un bloc avec la croix au centre de l’écran. Si la souris n’est pas capturée, glisse sur la vue ou utilise les flèches.';
+  $('guide-copy').textContent = usingTouch
+    ? map ? 'En vue 2D, touche un bloc à proximité pour le viser.' : 'Glisse un doigt sur le paysage pour regarder. La croix au centre indique le bloc visé.'
+    : map ? 'WebGL est indisponible. En vue 2D, vise un bloc à proximité avec le curseur.' : 'Vise un bloc avec la croix au centre de l’écran. Si la souris n’est pas capturée, glisse sur la vue ou utilise les flèches.';
   for (const id of ['guide-look', 'eco-option']) $(id).hidden = map;
   for (const id of ['guide-fly', 'guide-fly-move']) $(id).hidden = map || Boolean(survival);
 }
@@ -2738,7 +2861,7 @@ function directionInputs(dt) {
     if (turn || tilt) rotate(turn * dt * 1.35, tilt * dt * 1.22);
   }
   const shift = active('ShiftLeft', 'ShiftRight');
-  return { side: Number(right) - Number(left), forward: Number(forward) - Number(back), up: active('Space', 'jump'), down: shift, sprint: shift && (!survival || survival.food >= 3) };
+  return { side: Number(right) - Number(left), forward: Number(forward) - Number(back), up: active('Space', 'jump'), down: shift || active('down'), sprint: shift && (!survival || survival.food >= 3) };
 }
 
 function invalidate() {
@@ -2832,7 +2955,7 @@ function usingDrag() {
 }
 
 function startGame() {
-  if (playing || play.disabled || guide.open || worldDialog.open || inventoryDialog.open) return;
+  if (playing || play.disabled || guide.open || worldDialog.open || inventoryDialog.open || installDialog?.open) return;
   if (survival?.dead) {
     survival.respawn(); player = world.spawn(); lastVitals = '';
     persist();
@@ -2877,7 +3000,7 @@ function editBlock(place, point) {
   if (place && survival && hit.id === ID.BERRY_BUSH) {
     const got = survival.harvest(world, hit.cell);
     if (got) {
-      announce(`+${got} baies · F pour manger`);
+      announce(`+${got} baie${got === 1 ? '' : 's'} · ${usingTouch ? 'Icône baie' : 'F'} pour manger`);
       updateTerrain(hit.cell[0], hit.cell[2]);
     } else announce('Tu ne peux pas ramasser plus de baies.');
     return;
@@ -2950,7 +3073,8 @@ function dig(hit, dt) {
 function eatBerries() {
   if (!survival) return;
   const ok = survival.eat();
-  const text = ok ? 'Tu as mangé une baie · +5 nourriture' : survival.count(IT.BERRIES) ? 'Tu n’as pas faim.' : 'Récolte des baies avec un clic droit sur un buisson.';
+  const missing = usingTouch ? 'Vise un buisson et touche Poser pour récolter des baies.' : 'Récolte des baies avec un clic droit sur un buisson.';
+  const text = ok ? 'Tu as mangé une baie · +5 nourriture' : survival.count(IT.BERRIES) ? 'Tu n’as pas faim.' : missing;
   if (inventoryDialog.open) { refreshInventory(); inventoryMessage(text); }
   else announce(text);
   if (ok) { updateVitals(); saveSoon(); }
@@ -3054,7 +3178,7 @@ function openDialog(dialog) {
 }
 
 function openInventory() {
-  if (inventoryDialog.open || guide.open || worldDialog.open) return;
+  if (inventoryDialog.open || guide.open || worldDialog.open || installDialog?.open) return;
   inventoryTab = 'blocks';
   $('block-search').value = '';
   inventoryMessage('');
@@ -3071,7 +3195,7 @@ function randomSeed() {
 try { renderer = new VoxelRenderer(canvas, art); connectCanvas(); }
 catch { useMap(); }
 const saved = readSave();
-eco.checked = saved.eco === true;
+eco.checked = typeof saved.eco === 'boolean' ? saved.eco : usingTouch;
 mode = saved.mode;
 savedWorlds = saved.worlds;
 makeInventory();
@@ -3080,7 +3204,7 @@ const initial = savedWorlds[mode];
 openWorld(initial?.seed ?? DEFAULT_SEED, initial);
 showStorage();
 play.disabled = false;
-if (location.protocol === 'file:') $('download').href = location.href.split('#')[0];
+if (location.protocol === 'file:' && $('download')) $('download').href = location.href.split('#')[0];
 
 play.addEventListener('click', startGame);
 $('pause').addEventListener('click', pauseGame);
@@ -3090,6 +3214,8 @@ $('open-guide').addEventListener('click', () => openDialog(guide));
 $('open-inventory').addEventListener('click', openInventory);
 $('block-search').addEventListener('input', refreshInventory);
 $('eat').addEventListener('click', eatBerries);
+$('touch-eat').addEventListener('click', eatBerries);
+$('touch-fly').addEventListener('click', toggleFlight);
 for (const button of document.querySelectorAll('[data-mode]')) button.addEventListener('click', () => changeMode(button.dataset.mode));
 for (const button of $('inventory-tabs').querySelectorAll('button')) button.addEventListener('click', () => {
   inventoryTab = button.dataset.tab;
@@ -3114,7 +3240,7 @@ $('world-form').addEventListener('submit', (e) => {
 eco.addEventListener('change', () => { persist(); invalidate(); });
 
 window.addEventListener('keydown', (e) => {
-  if (guide.open || worldDialog.open || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (guide.open || worldDialog.open || installDialog?.open || e.ctrlKey || e.metaKey || e.altKey) return;
   const code = keyboardCode(e);
   const writing = e.target instanceof HTMLInputElement || e.target.isContentEditable;
   if (!writing && !e.repeat && code === 'KeyE') {
@@ -3140,14 +3266,19 @@ window.addEventListener('keydown', (e) => {
   keys.add(code);
   if (code === 'Space' && !e.repeat && renderer.is3D && !survival) {
     if (performance.now() - lastSpace < 285) {
-      player.flying = !player.flying;
-      player.vy = 0;
+      toggleFlight();
       lastSpace = -Infinity;
-      updateUI();
-      announce(player.flying ? 'Vol activé · Espace pour monter, Maj pour descendre' : 'Vol désactivé');
     } else lastSpace = performance.now();
   }
 });
+function toggleFlight() {
+  if (!playing || survival || !renderer.is3D) return;
+  player.flying = !player.flying;
+  player.vy = 0;
+  updateUI();
+  announce(player.flying ? (usingTouch ? 'Vol activé · Haut / Bas' : 'Vol activé · Espace pour monter, Maj pour descendre') : 'Vol désactivé');
+  saveSoon();
+}
 window.addEventListener('keyup', (e) => keys.delete(keyboardCode(e)));
 function keyboardCode(e) {
   if (e.code && e.code !== 'Unidentified') return e.code;
@@ -3177,10 +3308,10 @@ viewport.addEventListener('wheel', (e) => {
 }, { passive: false });
 
 viewport.addEventListener('pointerdown', (e) => {
-  if (e.pointerType === 'touch' && !usingTouch) { usingTouch = true; updateUI(); }
+  if (e.pointerType === 'touch' && !usingTouch) { usingTouch = true; updateUI(); invalidate(); }
 });
-for (const button of viewport.querySelectorAll('[data-move], [data-act="jump"]')) {
-  const move = button.dataset.move || 'jump';
+for (const button of viewport.querySelectorAll('[data-move], [data-act="jump"], [data-act="down"]')) {
+  const move = button.dataset.move || button.dataset.act;
   button.addEventListener('pointerdown', (e) => {
     e.preventDefault(); button.setPointerCapture?.(e.pointerId); touchKeys.add(move);
   });
@@ -3193,6 +3324,7 @@ touchBreak.addEventListener('pointerdown', (e) => {
   touchBreak.setPointerCapture?.(e.pointerId);
   beginBreak(e.pointerId);
 });
+touchBreak.addEventListener('lostpointercapture', (e) => { if (e.pointerId === miningPointer) endMining(); });
 touchBreak.addEventListener('click', () => { if (!survival) editBlock(false); });
 viewport.querySelector('[data-act="place"]').addEventListener('click', () => editBlock(true));
 for (const event of ['pointerup', 'pointercancel']) window.addEventListener(event, (e) => {
@@ -3200,7 +3332,15 @@ for (const event of ['pointerup', 'pointercancel']) window.addEventListener(even
 });
 
 window.addEventListener('blur', () => { keys.clear(); touchKeys.clear(); endMining(); });
-document.addEventListener('visibilitychange', () => { if (document.hidden) pauseGame(); });
+function suspendGame() { if (playing) pauseGame(); else persist(); }
+document.addEventListener('visibilitychange', () => { if (document.hidden) suspendGame(); });
+window.addEventListener('minestart:pause', suspendGame);
+window.addEventListener('minestart:back', (event) => {
+  const dialog = [inventoryDialog, guide, worldDialog, installDialog].find((item) => item?.open);
+  if (dialog) { dialog.close(); event.preventDefault(); }
+  else if (playing) { pauseGame(); event.preventDefault(); }
+  else if (card.classList.contains('theater')) { toggleFullscreen(); event.preventDefault(); }
+});
 window.addEventListener('pagehide', persist);
 if (window.ResizeObserver) new ResizeObserver(invalidate).observe(viewport);
 else window.addEventListener('resize', invalidate);

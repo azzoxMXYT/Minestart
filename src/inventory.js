@@ -135,7 +135,7 @@ function refreshInventory() {
     }
   }
   $('catalogue-title').textContent = inSurvival ? 'Matériaux récoltés' : `${CATALOGUE.length} blocs et décorations`;
-  const hint = `Clique sur un bloc pour l’assigner à la touche ${selection + 1}.`;
+  const hint = usingTouch ? `Touche un bloc pour l’ajouter à l’emplacement ${selection + 1}.` : `Clique sur un bloc pour l’assigner à la touche ${selection + 1}.`;
   $('catalogue-copy').textContent = inSurvival ? `${hint} Récolte d’abord tes matériaux.` : hint;
   const query = searchName($('block-search').value.trim());
   let visible = 0;
@@ -148,5 +148,7 @@ function refreshInventory() {
     if (placeable) button.setAttribute('aria-pressed', String(id === hotSlots[selection]));
   }
   $('catalogue-empty').hidden = visible > 0;
-  $('catalogue-empty').textContent = query ? 'Aucun matériau ne correspond à cette recherche.' : 'Ton sac est vide. Maintiens le clic gauche sur un bloc pour le récolter.';
+  $('catalogue-empty').textContent = query ? 'Aucun matériau ne correspond à cette recherche.'
+    : usingTouch ? 'Ton sac est vide. Vise un bloc et maintiens Miner pour le récolter.'
+    : 'Ton sac est vide. Maintiens le clic gauche sur un bloc pour le récolter.';
 }

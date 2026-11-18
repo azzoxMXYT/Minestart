@@ -2,7 +2,8 @@ const $ = (id) => document.getElementById(id);
 const card = $('game-card'), viewport = $('viewport'), hotbar = $('hotbar');
 const play = $('play'), guide = $('guide-dialog'), worldDialog = $('world-dialog');
 const eco = $('eco'), seedInput = $('seed-input');
-const inventoryDialog = $('inventory-dialog');
+const inventoryDialog = $('inventory-dialog'), installDialog = $('install-dialog');
+const appEdition = document.documentElement.dataset.edition;
 const STORAGE = 'minestart:2', LEGACY_STORAGE = 'minestart:1';
 const safeSeed = (value) => Number.isInteger(value) && value >= 0 && value < 1000000;
 const keys = new Set();
@@ -18,7 +19,7 @@ let player, world, survival, selection = 0, hotSlots = [...PALETTE];
 let mode = GAME_MODE.CREATIVE, savedWorlds = {};
 let miningPointer = null, mineKey = '', mineWork = 0;
 let lastVitals = '', lastClock = '', lastLight = -1, lastWorldDraw = 0, lastCheckpoint = 0;
-let playing = false, started = false, pointerCaptured = false, drag = null, usingTouch = coarse.matches;
+let playing = false, started = false, pointerCaptured = false, drag = null, usingTouch = coarse.matches || appEdition === 'android';
 let lastSpace = -Infinity, lockTime = 0;
 let frameRequest = 0, lastFrame = 0, forceDraw = true;
 let lastPosition = '', renderedPose = [], renderedTarget = '';
@@ -151,6 +152,8 @@ function updateVitals() {
 
 function updateUI() {
   const map = !renderer.is3D, dead = survival?.dead;
+  document.documentElement.classList.toggle('is-touch', usingTouch);
+  document.documentElement.classList.toggle('touch-play', playing && usingTouch);
   viewport.classList.toggle('is-survival', Boolean(survival));
   viewport.classList.toggle('is-dead', Boolean(dead));
   $('vitals').hidden = !survival;
@@ -170,16 +173,28 @@ function updateUI() {
   viewport.querySelector('.reticle').hidden = map;
   $('pause').hidden = !playing;
   $('touch-controls').hidden = !(playing && usingTouch);
+  $('touch-fly').hidden = !(playing && usingTouch && !map && !survival);
+  $('touch-fly').setAttribute('aria-pressed', String(Boolean(player?.flying)));
+  $('touch-eat').hidden = !(playing && usingTouch && survival);
+  const jump = viewport.querySelector('[data-act="jump"]');
+  jump.querySelector('span').textContent = player?.flying ? 'Haut' : 'Saut';
+  jump.setAttribute('aria-label', player?.flying ? 'Monter' : 'Sauter');
+  viewport.querySelector('[data-act="down"]').hidden = !player?.flying;
+  $('guide-touch-fly').hidden = map || Boolean(survival);
+  $('guide-touch-food').hidden = !survival;
+  $('guide-touch-mine').textContent = survival ? 'Maintiens Miner / touche Poser' : 'Boutons Miner / Poser';
   $('start-layer').hidden = playing;
   $('play-label').textContent = dead ? 'Réapparaître' : started ? 'Reprendre' : 'Jouer';
-  $('play-hint').textContent = dead ? `${survival.why || 'Tu as perdu ta vie.'} Ton sac est conservé.` : map ? 'Vue 2D · Vise les blocs avec le curseur' : started ? 'Retour dans ton monde' : survival ? 'Récolte du bois pour fabriquer une pioche.' : usingTouch ? 'Touche pour entrer dans le monde' : 'Clique pour entrer dans le monde';
+  $('play-hint').textContent = dead ? `${survival.why || 'Tu as perdu ta vie.'} Ton sac est conservé.` : map ? (usingTouch ? 'Vue 2D · Touche un bloc pour le viser' : 'Vue 2D · Vise les blocs avec le curseur') : started ? 'Retour dans ton monde' : survival ? 'Récolte du bois pour commencer.' : usingTouch ? 'Touche pour jouer' : 'Clique pour entrer dans le monde';
   const hint = $('footer-hint');
   if (usingTouch) hint.textContent = map ? 'Touche un bloc pour le viser' : 'Glisse pour regarder';
   else {
     const kbd = document.createElement('kbd'); kbd.textContent = 'Échap';
     hint.replaceChildren(kbd, document.createTextNode(map || (playing && !pointerCaptured) ? ' Mettre en pause' : ' Libérer la souris'));
   }
-  $('guide-copy').textContent = map ? 'WebGL est indisponible. En vue 2D, vise un bloc à proximité avec le curseur.' : 'Vise un bloc avec la croix au centre de l’écran. Si la souris n’est pas capturée, glisse sur la vue ou utilise les flèches.';
+  $('guide-copy').textContent = usingTouch
+    ? map ? 'En vue 2D, touche un bloc à proximité pour le viser.' : 'Glisse un doigt sur le paysage pour regarder. La croix au centre indique le bloc visé.'
+    : map ? 'WebGL est indisponible. En vue 2D, vise un bloc à proximité avec le curseur.' : 'Vise un bloc avec la croix au centre de l’écran. Si la souris n’est pas capturée, glisse sur la vue ou utilise les flèches.';
   for (const id of ['guide-look', 'eco-option']) $(id).hidden = map;
   for (const id of ['guide-fly', 'guide-fly-move']) $(id).hidden = map || Boolean(survival);
 }
@@ -207,7 +222,7 @@ function directionInputs(dt) {
     if (turn || tilt) rotate(turn * dt * 1.35, tilt * dt * 1.22);
   }
   const shift = active('ShiftLeft', 'ShiftRight');
-  return { side: Number(right) - Number(left), forward: Number(forward) - Number(back), up: active('Space', 'jump'), down: shift, sprint: shift && (!survival || survival.food >= 3) };
+  return { side: Number(right) - Number(left), forward: Number(forward) - Number(back), up: active('Space', 'jump'), down: shift || active('down'), sprint: shift && (!survival || survival.food >= 3) };
 }
 
 function invalidate() {
@@ -301,7 +316,7 @@ function usingDrag() {
 }
 
 function startGame() {
-  if (playing || play.disabled || guide.open || worldDialog.open || inventoryDialog.open) return;
+  if (playing || play.disabled || guide.open || worldDialog.open || inventoryDialog.open || installDialog?.open) return;
   if (survival?.dead) {
     survival.respawn(); player = world.spawn(); lastVitals = '';
     persist();
@@ -346,7 +361,7 @@ function editBlock(place, point) {
   if (place && survival && hit.id === ID.BERRY_BUSH) {
     const got = survival.harvest(world, hit.cell);
     if (got) {
-      announce(`+${got} baies · F pour manger`);
+      announce(`+${got} baie${got === 1 ? '' : 's'} · ${usingTouch ? 'Icône baie' : 'F'} pour manger`);
       updateTerrain(hit.cell[0], hit.cell[2]);
     } else announce('Tu ne peux pas ramasser plus de baies.');
     return;
@@ -419,7 +434,8 @@ function dig(hit, dt) {
 function eatBerries() {
   if (!survival) return;
   const ok = survival.eat();
-  const text = ok ? 'Tu as mangé une baie · +5 nourriture' : survival.count(IT.BERRIES) ? 'Tu n’as pas faim.' : 'Récolte des baies avec un clic droit sur un buisson.';
+  const missing = usingTouch ? 'Vise un buisson et touche Poser pour récolter des baies.' : 'Récolte des baies avec un clic droit sur un buisson.';
+  const text = ok ? 'Tu as mangé une baie · +5 nourriture' : survival.count(IT.BERRIES) ? 'Tu n’as pas faim.' : missing;
   if (inventoryDialog.open) { refreshInventory(); inventoryMessage(text); }
   else announce(text);
   if (ok) { updateVitals(); saveSoon(); }
@@ -523,7 +539,7 @@ function openDialog(dialog) {
 }
 
 function openInventory() {
-  if (inventoryDialog.open || guide.open || worldDialog.open) return;
+  if (inventoryDialog.open || guide.open || worldDialog.open || installDialog?.open) return;
   inventoryTab = 'blocks';
   $('block-search').value = '';
   inventoryMessage('');
@@ -540,7 +556,7 @@ function randomSeed() {
 try { renderer = new VoxelRenderer(canvas, art); connectCanvas(); }
 catch { useMap(); }
 const saved = readSave();
-eco.checked = saved.eco === true;
+eco.checked = typeof saved.eco === 'boolean' ? saved.eco : usingTouch;
 mode = saved.mode;
 savedWorlds = saved.worlds;
 makeInventory();
@@ -549,7 +565,7 @@ const initial = savedWorlds[mode];
 openWorld(initial?.seed ?? DEFAULT_SEED, initial);
 showStorage();
 play.disabled = false;
-if (location.protocol === 'file:') $('download').href = location.href.split('#')[0];
+if (location.protocol === 'file:' && $('download')) $('download').href = location.href.split('#')[0];
 
 play.addEventListener('click', startGame);
 $('pause').addEventListener('click', pauseGame);
@@ -559,6 +575,8 @@ $('open-guide').addEventListener('click', () => openDialog(guide));
 $('open-inventory').addEventListener('click', openInventory);
 $('block-search').addEventListener('input', refreshInventory);
 $('eat').addEventListener('click', eatBerries);
+$('touch-eat').addEventListener('click', eatBerries);
+$('touch-fly').addEventListener('click', toggleFlight);
 for (const button of document.querySelectorAll('[data-mode]')) button.addEventListener('click', () => changeMode(button.dataset.mode));
 for (const button of $('inventory-tabs').querySelectorAll('button')) button.addEventListener('click', () => {
   inventoryTab = button.dataset.tab;
@@ -583,7 +601,7 @@ $('world-form').addEventListener('submit', (e) => {
 eco.addEventListener('change', () => { persist(); invalidate(); });
 
 window.addEventListener('keydown', (e) => {
-  if (guide.open || worldDialog.open || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (guide.open || worldDialog.open || installDialog?.open || e.ctrlKey || e.metaKey || e.altKey) return;
   const code = keyboardCode(e);
   const writing = e.target instanceof HTMLInputElement || e.target.isContentEditable;
   if (!writing && !e.repeat && code === 'KeyE') {
@@ -609,14 +627,19 @@ window.addEventListener('keydown', (e) => {
   keys.add(code);
   if (code === 'Space' && !e.repeat && renderer.is3D && !survival) {
     if (performance.now() - lastSpace < 285) {
-      player.flying = !player.flying;
-      player.vy = 0;
+      toggleFlight();
       lastSpace = -Infinity;
-      updateUI();
-      announce(player.flying ? 'Vol activé · Espace pour monter, Maj pour descendre' : 'Vol désactivé');
     } else lastSpace = performance.now();
   }
 });
+function toggleFlight() {
+  if (!playing || survival || !renderer.is3D) return;
+  player.flying = !player.flying;
+  player.vy = 0;
+  updateUI();
+  announce(player.flying ? (usingTouch ? 'Vol activé · Haut / Bas' : 'Vol activé · Espace pour monter, Maj pour descendre') : 'Vol désactivé');
+  saveSoon();
+}
 window.addEventListener('keyup', (e) => keys.delete(keyboardCode(e)));
 function keyboardCode(e) {
   if (e.code && e.code !== 'Unidentified') return e.code;
@@ -646,10 +669,10 @@ viewport.addEventListener('wheel', (e) => {
 }, { passive: false });
 
 viewport.addEventListener('pointerdown', (e) => {
-  if (e.pointerType === 'touch' && !usingTouch) { usingTouch = true; updateUI(); }
+  if (e.pointerType === 'touch' && !usingTouch) { usingTouch = true; updateUI(); invalidate(); }
 });
-for (const button of viewport.querySelectorAll('[data-move], [data-act="jump"]')) {
-  const move = button.dataset.move || 'jump';
+for (const button of viewport.querySelectorAll('[data-move], [data-act="jump"], [data-act="down"]')) {
+  const move = button.dataset.move || button.dataset.act;
   button.addEventListener('pointerdown', (e) => {
     e.preventDefault(); button.setPointerCapture?.(e.pointerId); touchKeys.add(move);
   });
@@ -662,6 +685,7 @@ touchBreak.addEventListener('pointerdown', (e) => {
   touchBreak.setPointerCapture?.(e.pointerId);
   beginBreak(e.pointerId);
 });
+touchBreak.addEventListener('lostpointercapture', (e) => { if (e.pointerId === miningPointer) endMining(); });
 touchBreak.addEventListener('click', () => { if (!survival) editBlock(false); });
 viewport.querySelector('[data-act="place"]').addEventListener('click', () => editBlock(true));
 for (const event of ['pointerup', 'pointercancel']) window.addEventListener(event, (e) => {
@@ -669,7 +693,15 @@ for (const event of ['pointerup', 'pointercancel']) window.addEventListener(even
 });
 
 window.addEventListener('blur', () => { keys.clear(); touchKeys.clear(); endMining(); });
-document.addEventListener('visibilitychange', () => { if (document.hidden) pauseGame(); });
+function suspendGame() { if (playing) pauseGame(); else persist(); }
+document.addEventListener('visibilitychange', () => { if (document.hidden) suspendGame(); });
+window.addEventListener('minestart:pause', suspendGame);
+window.addEventListener('minestart:back', (event) => {
+  const dialog = [inventoryDialog, guide, worldDialog, installDialog].find((item) => item?.open);
+  if (dialog) { dialog.close(); event.preventDefault(); }
+  else if (playing) { pauseGame(); event.preventDefault(); }
+  else if (card.classList.contains('theater')) { toggleFullscreen(); event.preventDefault(); }
+});
 window.addEventListener('pagehide', persist);
 if (window.ResizeObserver) new ResizeObserver(invalidate).observe(viewport);
 else window.addEventListener('resize', invalidate);

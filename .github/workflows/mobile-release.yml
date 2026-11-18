@@ -1,0 +1,64 @@
+name: Publication Android et mobile
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [arena/09cef573-minestart]
+    paths: [.github/workflows/mobile-release.yml, mobile/release-notes.md]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: minestart-mobile-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Tester le jeu et la version installable
+        run: npm test
+      - name: Construire et signer l’APK
+        env:
+          MINESTART_ANDROID_KEYSTORE_B64: ${{ secrets.MINESTART_ANDROID_KEYSTORE_B64 }}
+          MINESTART_ANDROID_PASSWORD: ${{ secrets.MINESTART_ANDROID_PASSWORD }}
+        run: |
+          if [[ -n "$MINESTART_ANDROID_KEYSTORE_B64" || -n "$MINESTART_ANDROID_PASSWORD" ]]; then
+            test -n "$MINESTART_ANDROID_KEYSTORE_B64"
+            test -n "$MINESTART_ANDROID_PASSWORD"
+            export MINESTART_ANDROID_KEYSTORE="$RUNNER_TEMP/minestart-release.p12"
+            trap 'rm -f "$MINESTART_ANDROID_KEYSTORE"' EXIT
+            (umask 077; printf '%s' "$MINESTART_ANDROID_KEYSTORE_B64" | base64 --decode > "$MINESTART_ANDROID_KEYSTORE")
+          fi
+          unset MINESTART_ANDROID_KEYSTORE_B64
+          npm run build:android
+      - name: Démarrer le jeu sans réseau sur Android
+        run: bash scripts/smoke-android.sh
+      - name: Publier les fichiers mobiles
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          tag="mobile-v$version"
+          (cd docs && zip -qr ../release/Minestart-PWA.zip .)
+          (cd release && sha256sum Minestart.apk Minestart-PWA.zip > SHA256SUMS-mobile.txt)
+          if draft=$(gh release view "$tag" --json isDraft --jq '.isDraft'); then
+            if [[ "$draft" != true ]]; then
+              echo "La release $tag est déjà publiée. Incrémente la version avant de republier." >&2
+              exit 1
+            fi
+            gh release edit "$tag" --target "$GITHUB_SHA" --title "Minestart $version — Mobile" --notes-file mobile/release-notes.md
+          else
+            gh release create "$tag" --draft --target "$GITHUB_SHA" --title "Minestart $version — Mobile" --notes-file mobile/release-notes.md
+          fi
+          gh release upload "$tag" release/Minestart.apk release/Minestart-PWA.zip release/SHA256SUMS-mobile.txt --clobber
+          gh release edit "$tag" --draft=false --latest=false

@@ -1,12 +1,13 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" data-edition="__EDITION__">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#151813">
   <meta name="description" content="Minestart, un jeu de blocs léger et gratuit. Explore et construis dans ton navigateur, sans compte ni installation.">
   <title>Minestart — Terrain de jeu</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23242c1b'/%3E%3Cpath d='M16 4l11 6-11 6-11-6z' fill='%23d2f274'/%3E%3Cpath d='M5 10l11 6v12L5 22z' fill='%2394b94e'/%3E%3Cpath d='M27 10l-11 6v12l11-6z' fill='%235b7b30'/%3E%3C/svg%3E">
+  <!-- __APP_HEAD__ -->
   <!-- __FONT_LICENSES__ -->
   <style>/* __STYLE__ */</style>
 </head>
@@ -39,6 +40,8 @@
     <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
     <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
     <symbol id="i-jump" viewBox="0 0 24 24"><path d="M12 17V4m-5 5 5-5 5 5M5 21h14"/></symbol>
+    <symbol id="i-fly" viewBox="0 0 24 24"><path d="m3 12 9-7 9 7M6 16l6-5 6 5m-6-4v8"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v16m-5-5 5 5 5-5"/></symbol>
     <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14m6-14v14" stroke-width="2.8"/></symbol>
     <symbol id="i-bag" viewBox="0 0 24 24"><path d="M8 7V5a4 4 0 0 1 8 0v2M5 7h14l2 13H3zM8 11h8m-8 4h8"/></symbol>
     <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 4-3.3 7-8 9-4.7-2-8-5-8-9V6z"/><path d="M12 7v9m-3-6h6"/></symbol>
@@ -53,12 +56,9 @@
       <div class="identity">
         <svg class="brand-mark" aria-hidden="true"><use href="#logo"/></svg>
         <span class="brand">MINESTART</span>
-        <span class="edition">ÉDITION WEB</span>
+        <span class="edition">__EDITION_LABEL__</span>
       </div>
-      <a class="button download" id="download" href="./index.html" download="Minestart.html" title="Télécharger le jeu pour y jouer sans Internet">
-        <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
-        <span>Télécharger</span>
-      </a>
+      <!-- __APP_ACTION__ -->
     </div>
   </header>
 
@@ -68,6 +68,7 @@
         <div class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-blocks"/></svg> JEU DE BLOCS · CRÉATIF &amp; SURVIE</div>
         <h1 id="main-title">Terrain de jeu<span>.</span></h1>
         <p>Construis sans limite ou prépare-toi à survivre à la nuit.</p>
+        <!-- __APP_STATUS__ -->
       </div>
       <div class="ready" id="ready"><span class="status-dot"></span><span id="ready-text">Prêt à jouer</span></div>
     </section>
@@ -77,10 +78,16 @@
         <div class="game-bar">
           <div class="game-heading"><svg class="icon" aria-hidden="true"><use href="#i-screen"/></svg><span id="view-label">Vue du monde</span></div>
           <div class="game-actions">
+            <button class="bare-button touch-tool" id="touch-fly" type="button" aria-label="Vol créatif" title="Vol créatif" aria-pressed="false" hidden><svg class="icon" aria-hidden="true"><use href="#i-fly"/></svg></button>
+            <button class="bare-button touch-tool" id="touch-eat" type="button" aria-label="Manger une baie" title="Manger une baie" hidden><svg class="icon" aria-hidden="true"><use href="#i-food-pixel"/></svg></button>
             <button class="bare-button pause" id="pause" type="button" aria-label="Mettre en pause" title="Mettre en pause (Échap)" hidden><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg></button>
             <button class="bare-button inventory-toggle" id="open-inventory" type="button" aria-label="Inventaire (E)"><svg class="icon" aria-hidden="true"><use href="#i-bag"/></svg><span>Inventaire</span><kbd>E</kbd></button>
             <button class="bare-button fullscreen" id="fullscreen" type="button" aria-pressed="false"><svg class="icon" aria-hidden="true"><use id="fullscreen-icon" href="#i-expand"/></svg><span id="fullscreen-label">Plein écran</span></button>
           </div>
+        </div>
+        <div class="mode-switch mobile-modes" role="group" aria-label="Mode de jeu">
+          <button type="button" data-mode="creative" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-blocks"/></svg>Créatif</button>
+          <button type="button" data-mode="survival" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>Survie</button>
         </div>
         <div class="viewport" id="viewport">
           <canvas id="scene" tabindex="0" aria-label="Monde de blocs interactif"></canvas>
@@ -107,9 +114,10 @@
               <button type="button" data-move="right" aria-label="Aller à droite">▶</button>
             </div>
             <div class="touch-actions">
-              <button type="button" data-act="break" aria-label="Casser un bloc"><svg class="icon" aria-hidden="true"><use href="#i-minus"/></svg></button>
-              <button type="button" data-act="place" aria-label="Poser un bloc"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></button>
-              <button type="button" data-act="jump" aria-label="Sauter"><svg class="icon" aria-hidden="true"><use href="#i-jump"/></svg></button>
+              <button type="button" data-act="break" aria-label="Casser un bloc"><svg class="icon" aria-hidden="true"><use href="#i-minus"/></svg><span>Miner</span></button>
+              <button type="button" data-act="place" aria-label="Poser un bloc"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg><span>Poser</span></button>
+              <button type="button" data-act="jump" aria-label="Sauter"><svg class="icon" aria-hidden="true"><use href="#i-jump"/></svg><span>Saut</span></button>
+              <button type="button" data-act="down" aria-label="Descendre" hidden><svg class="icon" aria-hidden="true"><use href="#i-down"/></svg><span>Bas</span></button>
             </div>
           </div>
           <div class="inventory">
@@ -146,7 +154,8 @@
 
         <section class="panel controls-panel" aria-labelledby="controls-title">
           <div class="section-kicker"><span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-keyboard"/></svg></span><h2 id="controls-title">Commandes</h2></div>
-          <dl class="controls">
+          <p class="touch-command-summary">Utilise les flèches pour avancer, glisse pour regarder, puis touche <b>Miner</b> ou <b>Poser</b>.</p>
+          <dl class="controls desktop-guide">
             <div><dt>Se déplacer</dt><dd class="key-group"><kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd></dd></div>
             <div><dt>Sauter</dt><dd><kbd>Espace</kbd></dd></div>
             <div><dt>Casser un bloc</dt><dd class="mouse-label"><svg class="icon" aria-hidden="true"><use href="#i-mouse-l"/></svg><span id="mine-command">Clic gauche</span></dd></div>
@@ -173,7 +182,7 @@
       <button type="submit" class="bare-button dialog-close" aria-label="Fermer"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
     </form>
     <p class="dialog-copy" id="guide-copy">Vise un bloc avec la croix au centre de l’écran.</p>
-    <dl class="controls guide-controls">
+    <dl class="controls guide-controls desktop-guide">
       <div><dt>Se déplacer</dt><dd><kbd>ZQSD</kbd> <span>ou</span> <kbd>WASD</kbd></dd></div>
       <div id="guide-look"><dt>Regarder autour de soi</dt><dd>Souris ou flèches</dd></div>
       <div><dt>Sauter / nager</dt><dd><kbd>Espace</kbd></dd></div>
@@ -187,7 +196,16 @@
       <div><dt>Choisir un bloc</dt><dd><kbd>1</kbd> – <kbd>8</kbd> ou molette</dd></div>
       <div><dt>Mettre en pause</dt><dd><kbd>Échap</kbd></dd></div>
     </dl>
-    <div class="eco-option" id="eco-option"><div><label for="eco">Mode éco</label><p>Réduit la définition sur les ordinateurs plus lents.</p></div><input type="checkbox" id="eco" role="switch"></div>
+    <dl class="controls guide-controls touch-guide">
+      <div><dt>Se déplacer</dt><dd>Flèches à gauche</dd></div>
+      <div><dt>Sauter / nager</dt><dd>Bouton Saut</dd></div>
+      <div id="guide-touch-fly"><dt>Voler (Créatif)</dt><dd>Bouton de vol, puis Haut / Bas</dd></div>
+      <div><dt>Casser / poser</dt><dd id="guide-touch-mine">Boutons Miner / Poser</dd></div>
+      <div id="guide-touch-food" hidden><dt>Récolter / manger</dt><dd>Poser sur un buisson / icône baie</dd></div>
+      <div><dt>Choisir un bloc</dt><dd>Touche la barre rapide</dd></div>
+      <div><dt>Fabriquer</dt><dd>Inventaire → Fabrication (Survie)</dd></div>
+    </dl>
+    <div class="eco-option" id="eco-option"><div><label for="eco">Mode éco</label><p>Réduit la définition et la fréquence d’affichage.</p></div><input type="checkbox" id="eco" role="switch"></div>
   </dialog>
 
   <dialog id="world-dialog" aria-labelledby="new-title">
@@ -231,6 +249,7 @@
     </section>
     <div class="inventory-foot"><span id="inventory-status" role="status"></span><span id="active-slot">Emplacement 1 sur 8</span></div>
   </dialog>
+  <!-- __APP_DIALOG__ -->
   <script>/* __SCRIPT__ */</script>
 </body>
 </html>
