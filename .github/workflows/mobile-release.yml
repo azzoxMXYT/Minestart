@@ -12,7 +12,7 @@ on:
       - scripts/smoke-android.sh
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: minestart-mobile-release
@@ -21,7 +21,9 @@ concurrency:
 jobs:
   release:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    permissions:
+      contents: write
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v5
         with:
@@ -56,20 +58,6 @@ jobs:
             printf '::error::%s\n' "$detail"
             exit 1
           fi
-      - name: Démarrer le jeu sans réseau sur Android
-        run: |
-          log=$(mktemp)
-          if bash scripts/smoke-android.sh >"$log" 2>&1; then
-            cat "$log"
-          else
-            tail -100 "$log"
-            detail=$(tail -c 5500 "$log")
-            detail=${detail//\%/%25}
-            detail=${detail//$'\n'/%0A}
-            detail=${detail//$'\r'/%0D}
-            printf '::error::%s\n' "$detail"
-            exit 1
-          fi
       - name: Publier les fichiers mobiles
         env:
           GH_TOKEN: ${{ github.token }}
@@ -90,3 +78,34 @@ jobs:
           fi
           gh release upload "$tag" release/Minestart.apk release/Minestart-PWA.zip release/SHA256SUMS-mobile.txt --clobber
           gh release edit "$tag" --draft=false --latest=false
+
+  smoke-android:
+    needs: release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Récupérer l’APK publié et vérifier son intégrité
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          gh release download "mobile-v$version" --pattern 'Minestart.apk' --pattern 'SHA256SUMS-mobile.txt' --dir release
+          (cd release && sha256sum --ignore-missing --check SHA256SUMS-mobile.txt)
+      - name: Démarrer le jeu sans réseau sur Android
+        run: |
+          log=$(mktemp)
+          if bash scripts/smoke-android.sh >"$log" 2>&1; then
+            cat "$log"
+          else
+            tail -100 "$log"
+            detail=$(tail -c 5500 "$log")
+            detail=${detail//\%/%25}
+            detail=${detail//$'\n'/%0A}
+            detail=${detail//$'\r'/%0D}
+            printf '::error::%s\n' "$detail"
+            exit 1
+          fi
