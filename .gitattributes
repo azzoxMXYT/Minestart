@@ -1,0 +1,4 @@
+# Keep the standalone HTML and its source consistent on Windows and Linux.
+* text=auto eol=lf
+*.ico binary
+*.woff2 binary

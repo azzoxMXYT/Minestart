@@ -18,18 +18,28 @@ jobs:
   release:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
       - name: Tester le jeu
-        run: npm test
+        shell: pwsh
+        run: |
+          $result = @(npm test 2>&1)
+          $code = $LASTEXITCODE
+          $result | Write-Host
+          if ($code -ne 0) {
+            $summary = (($result | Select-Object -Last 16) -join "`n").Replace('%', '%25').Replace("`n", '%0A')
+            Write-Host "::error::$summary"
+            exit $code
+          }
       - name: Construire les versions Windows
         shell: pwsh
         run: |
           $toolchain = Join-Path $env:RUNNER_TEMP 'minestart-zig'
+          New-Item -ItemType Directory -Path $toolchain -Force | Out-Null
           npm install --prefix $toolchain --no-audit --no-fund --no-package-lock --no-save --ignore-scripts @ryoppippi/zig-win32-x64@0.14.0-dev.2456
           if ($LASTEXITCODE -ne 0) { throw 'Impossible de préparer Zig.' }
           $env:ZIG = Join-Path $toolchain 'node_modules\@ryoppippi\zig-win32-x64\zig.exe'
