@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#151813">
+  <meta name="description" content="Minestart, un jeu de blocs léger et gratuit. Explore et construis dans ton navigateur, sans compte ni installation.">
+  <title>Minestart — Terrain de jeu</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23242c1b'/%3E%3Cpath d='M16 4l11 6-11 6-11-6z' fill='%23d2f274'/%3E%3Cpath d='M5 10l11 6v12L5 22z' fill='%2394b94e'/%3E%3Cpath d='M27 10l-11 6v12l11-6z' fill='%235b7b30'/%3E%3C/svg%3E">
+  <!-- __FONT_LICENSES__ -->
+  <style>/* __STYLE__ */</style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" class="sprite" aria-hidden="true">
+    <symbol id="logo" viewBox="0 0 32 32">
+      <path d="M16 2.4 28 9.3 16 16.2 4 9.3Z" fill="#daf481"/>
+      <path d="M4 9.3 16 16.2v13.4L4 22.7Z" fill="#8eb14b"/>
+      <path d="M28 9.3 16 16.2v13.4l12-6.9Z" fill="#5d8032"/>
+      <path d="m4 9.3 12 6.9v5.2l-3-1.7v1.9l-3-1.7v-3.5l-3-1.7v2L4 15Z" fill="#a9d355"/>
+      <path d="m28 9.3-12 6.9v5.2l3-1.7v2l3-1.7v-3.6l3-1.7v2l3-1.7Z" fill="#80a842"/>
+      <path d="m16 5.4 3.7 2.1-3.7 2.2-3.7-2.2zm5.8 3.4 2.8 1.6-2.8 1.6-2.8-1.6zm-11.6 0 2.7 1.6-2.7 1.6-2.8-1.6z" fill="#b4d866"/>
+    </symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-4-4 4 4 4-4M5 15v5h14v-5"/></symbol>
+    <symbol id="i-expand" viewBox="0 0 24 24"><path d="M9 4H4v5m11-5h5v5M4 15v5h5m11-5v5h-5"/></symbol>
+    <symbol id="i-contract" viewBox="0 0 24 24"><path d="M4 9h5V4m6 0v5h5M9 20v-5H4m16 0h-5v5"/></symbol>
+    <symbol id="i-screen" viewBox="0 0 24 24"><path d="M3 4.5h18v12H3zM8 20h8m-4-3.5V20"/><path d="m10 8 4 2.5-4 2.5z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-blocks" viewBox="0 0 24 24"><path d="M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3z" fill="currentColor" stroke="none"/><path d="M14 14h7v7h-7z" fill="currentColor" stroke="none" opacity=".4"/></symbol>
+    <symbol id="i-map" viewBox="0 0 24 24"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2zm6-2v16m6-14v16"/></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="13" rx="2"/><path d="M7 10h.01m3.33 0h.01m3.33 0h.01M17 10h.01M7 14h.01M10 14h7" stroke-width="2"/></symbol>
+    <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M4 4v6h6m-6 0a8 8 0 1 1 1 7"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-mouse-l" viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="6"/><path d="M6 10h12m-6-7v7"/><path d="M12 4a5 5 0 0 0-5 5h5Z" stroke="none" fill="currentColor"/></symbol>
+    <symbol id="i-mouse-r" viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="6"/><path d="M6 10h12m-6-7v7"/><path d="M12 4a5 5 0 0 1 5 5h-5Z" stroke="none" fill="currentColor"/></symbol>
+    <symbol id="i-crosshair" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8Z" fill="currentColor" stroke="none"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3.5h12l3 3v14H4v-17zm3 0v6h8v-6m1 17v-7H7v7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-dice" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 8h.01M16 8h.01M12 12h.01M8 16h.01m7.99 0h.01" stroke-width="2.5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="i-jump" viewBox="0 0 24 24"><path d="M12 17V4m-5 5 5-5 5 5M5 21h14"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14m6-14v14" stroke-width="2.8"/></symbol>
+  </svg>
+
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <div class="identity">
+        <svg class="brand-mark" aria-hidden="true"><use href="#logo"/></svg>
+        <span class="brand">MINESTART</span>
+        <span class="edition">ÉDITION WEB</span>
+      </div>
+      <a class="button download" id="download" href="./index.html" download="Minestart.html" title="Télécharger le jeu pour y jouer sans Internet">
+        <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
+        <span>Télécharger</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="intro" aria-labelledby="main-title">
+      <div>
+        <div class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-blocks"/></svg> BAC À SABLE CRÉATIF</div>
+        <h1 id="main-title">Terrain de jeu<span>.</span></h1>
+        <p>Explore, casse et construis dans un monde fait de blocs.</p>
+      </div>
+      <div class="ready" id="ready"><span class="status-dot"></span><span id="ready-text">Prêt à jouer</span></div>
+    </section>
+
+    <div class="workspace">
+      <section class="game-card panel" id="game-card" aria-label="Fenêtre de jeu">
+        <div class="game-bar">
+          <div class="game-heading"><svg class="icon" aria-hidden="true"><use href="#i-screen"/></svg><span id="view-label">Vue du monde</span></div>
+          <div class="game-actions">
+            <button class="bare-button pause" id="pause" type="button" aria-label="Mettre en pause" title="Mettre en pause (Échap)" hidden><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg></button>
+            <button class="bare-button fullscreen" id="fullscreen" type="button" aria-pressed="false"><svg class="icon" aria-hidden="true"><use id="fullscreen-icon" href="#i-expand"/></svg><span id="fullscreen-label">Plein écran</span></button>
+          </div>
+        </div>
+        <div class="viewport" id="viewport">
+          <canvas id="scene" tabindex="0" aria-label="Monde de blocs interactif"></canvas>
+          <div class="vignette" aria-hidden="true"></div>
+          <div class="coordinates" aria-label="Position dans le monde">
+            <svg class="icon" aria-hidden="true"><use href="#i-crosshair"/></svg>
+            <span><b>X</b> <span id="coord-x">52</span></span><span><b>Y</b> <span id="coord-y">20</span></span><span><b>Z</b> <span id="coord-z">93</span></span>
+          </div>
+          <div class="game-tag" id="game-tag"><span></span> CRÉATIF</div>
+          <div class="reticle" aria-hidden="true"></div>
+          <div class="start-layer" id="start-layer">
+            <button class="play-button" id="play" type="button" disabled><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span id="play-label">Jouer</span></button>
+            <div id="play-hint">Clique pour entrer dans le monde</div>
+          </div>
+          <div class="toast" id="toast" role="status" hidden></div>
+          <div class="touch-controls" id="touch-controls" hidden>
+            <div class="dpad" aria-label="Se déplacer">
+              <button type="button" data-move="forward" aria-label="Avancer">▲</button>
+              <button type="button" data-move="left" aria-label="Aller à gauche">◀</button>
+              <button type="button" data-move="back" aria-label="Reculer">▼</button>
+              <button type="button" data-move="right" aria-label="Aller à droite">▶</button>
+            </div>
+            <div class="touch-actions">
+              <button type="button" data-act="break" aria-label="Casser un bloc"><svg class="icon" aria-hidden="true"><use href="#i-minus"/></svg></button>
+              <button type="button" data-act="place" aria-label="Poser un bloc"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></button>
+              <button type="button" data-act="jump" aria-label="Sauter"><svg class="icon" aria-hidden="true"><use href="#i-jump"/></svg></button>
+            </div>
+          </div>
+          <div class="inventory">
+            <div class="block-caption" id="block-caption">Herbe</div>
+            <div class="hotbar" id="hotbar" role="group" aria-label="Choix du bloc"></div>
+          </div>
+        </div>
+        <div class="game-footer">
+          <div class="save-status" id="save-status"><svg class="icon" aria-hidden="true"><use href="#i-save"/></svg><span id="save-text">Sauvegarde locale</span></div>
+          <div class="footer-hint" id="footer-hint"><kbd>Échap</kbd> Libérer la souris</div>
+        </div>
+      </section>
+
+      <aside class="sidebar" aria-label="Informations et commandes">
+        <section class="panel world-panel" aria-labelledby="world-name">
+          <div class="section-kicker"><span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-map"/></svg></span><span>MONDE ACTUEL</span></div>
+          <h2 class="world-name" id="world-name">Vallon vert</h2>
+          <dl class="world-facts">
+            <div><dt>Mode</dt><dd class="mode-value">Créatif</dd></div>
+            <div><dt>Graine</dt><dd id="world-seed" class="seed-value">084217</dd></div>
+          </dl>
+          <button class="button new-world" id="new-world" type="button"><svg class="icon" aria-hidden="true"><use href="#i-rotate"/></svg><span>Nouveau monde</span></button>
+        </section>
+
+        <section class="panel controls-panel" aria-labelledby="controls-title">
+          <div class="section-kicker"><span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-keyboard"/></svg></span><h2 id="controls-title">Commandes</h2></div>
+          <dl class="controls">
+            <div><dt>Se déplacer</dt><dd class="key-group"><kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd></dd></div>
+            <div><dt>Sauter</dt><dd><kbd>Espace</kbd></dd></div>
+            <div><dt>Courir</dt><dd><kbd>Maj</kbd></dd></div>
+            <div><dt>Casser un bloc</dt><dd class="mouse-label"><svg class="icon" aria-hidden="true"><use href="#i-mouse-l"/></svg> Clic gauche</dd></div>
+            <div><dt>Poser un bloc</dt><dd class="mouse-label"><svg class="icon" aria-hidden="true"><use href="#i-mouse-r"/></svg> Clic droit</dd></div>
+            <div><dt>Choisir un bloc</dt><dd class="key-range"><kbd>1</kbd><span>–</span><kbd>8</kbd></dd></div>
+          </dl>
+          <button class="guide-link" id="open-guide" type="button">Toutes les commandes <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button>
+        </section>
+      </aside>
+    </div>
+
+    <footer class="site-footer">
+      <span><svg class="mini-brand" aria-hidden="true"><use href="#logo"/></svg><strong>Minestart</strong><span class="footer-divider"></span> Pensé pour les petits PC</span>
+      <span>Sans compte <i></i> Sans installation</span>
+    </footer>
+    <noscript><p class="noscript">Active JavaScript dans un navigateur récent pour jouer à Minestart.</p></noscript>
+  </main>
+
+  <dialog id="guide-dialog" aria-labelledby="guide-title">
+    <form method="dialog" class="dialog-head">
+      <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-keyboard"/></svg></span>
+      <h2 id="guide-title">Toutes les commandes</h2>
+      <button type="submit" class="bare-button dialog-close" aria-label="Fermer"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </form>
+    <p class="dialog-copy" id="guide-copy">Vise un bloc avec la croix au centre de l’écran.</p>
+    <dl class="controls guide-controls">
+      <div><dt>Se déplacer</dt><dd><kbd>ZQSD</kbd> <span>ou</span> <kbd>WASD</kbd></dd></div>
+      <div id="guide-look"><dt>Regarder autour de soi</dt><dd>Souris ou flèches</dd></div>
+      <div><dt>Sauter / nager</dt><dd><kbd>Espace</kbd></dd></div>
+      <div><dt>Courir</dt><dd><kbd>Maj</kbd></dd></div>
+      <div id="guide-fly"><dt>Activer / arrêter le vol</dt><dd><kbd>Espace</kbd> × 2</dd></div>
+      <div id="guide-fly-move"><dt>Monter / descendre en vol</dt><dd><kbd>Espace</kbd> / <kbd>Maj</kbd></dd></div>
+      <div><dt>Casser / poser un bloc</dt><dd>Clic gauche / droit</dd></div>
+      <div><dt>Choisir un bloc</dt><dd><kbd>1</kbd> – <kbd>8</kbd> ou molette</dd></div>
+      <div><dt>Mettre en pause</dt><dd><kbd>Échap</kbd></dd></div>
+    </dl>
+    <div class="eco-option" id="eco-option"><div><label for="eco">Mode éco</label><p>Réduit la définition sur les ordinateurs plus lents.</p></div><input type="checkbox" id="eco" role="switch"></div>
+  </dialog>
+
+  <dialog id="world-dialog" aria-labelledby="new-title">
+    <form method="dialog" class="dialog-head">
+      <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-map"/></svg></span>
+      <h2 id="new-title">Nouveau monde</h2>
+      <button type="submit" class="bare-button dialog-close" aria-label="Fermer"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </form>
+    <p class="dialog-copy">Cette action remplace le monde actuel et ses constructions sur cet appareil.</p>
+    <form id="world-form">
+      <label class="seed-label" for="seed-input">Graine du monde <span>(0 à 999999)</span></label>
+      <div class="seed-field"><input type="text" inputmode="numeric" pattern="[0-9]{1,6}" maxlength="6" id="seed-input" autocomplete="off" required><button type="button" class="button" id="random-seed"><svg class="icon" aria-hidden="true"><use href="#i-dice"/></svg>Aléatoire</button></div>
+      <div class="dialog-actions"><button type="button" class="button" id="cancel-world">Annuler</button><button type="submit" class="button primary">Créer le monde <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></div>
+    </form>
+  </dialog>
+  <script>/* __SCRIPT__ */</script>
+</body>
+</html>

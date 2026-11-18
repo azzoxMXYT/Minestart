@@ -1,0 +1,2 @@
+#define IDI_MINESTART 101
+#define IDR_GAME 102
