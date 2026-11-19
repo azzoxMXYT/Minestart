@@ -1,8 +1,11 @@
 const $ = (id) => document.getElementById(id);
 const card = $('game-card'), viewport = $('viewport'), hotbar = $('hotbar');
 const play = $('play'), guide = $('guide-dialog'), worldDialog = $('world-dialog');
-const eco = $('eco'), seedInput = $('seed-input');
-const inventoryDialog = $('inventory-dialog'), installDialog = $('install-dialog');
+const eco = $('eco'), showFps = $('show-fps'), seedInput = $('seed-input');
+const settingsDialog = $('settings-dialog'), inventoryDialog = $('inventory-dialog'), installDialog = $('install-dialog');
+const dialogs = [inventoryDialog, settingsDialog, guide, worldDialog, installDialog].filter(Boolean);
+const activeDialog = () => dialogs.find((dialog) => dialog.open);
+const fpsMeter = $('fps-meter'), fpsValue = $('fps-value'), frameRate = new FrameRate();
 const appEdition = document.documentElement.dataset.edition;
 const STORAGE = 'minestart:2', LEGACY_STORAGE = 'minestart:1';
 const safeSeed = (value) => Number.isInteger(value) && value >= 0 && value < 1000000;
@@ -37,7 +40,7 @@ function readSave() {
   if (data && typeof data.worlds === 'object' && data.worlds) {
     const worlds = {};
     for (const name of Object.values(GAME_MODE)) if (safeSeed(data.worlds[name]?.seed)) worlds[name] = data.worlds[name];
-    return { mode: data.mode === GAME_MODE.SURVIVAL ? GAME_MODE.SURVIVAL : GAME_MODE.CREATIVE, worlds, eco: data.eco };
+    return { mode: data.mode === GAME_MODE.SURVIVAL ? GAME_MODE.SURVIVAL : GAME_MODE.CREATIVE, worlds, eco: data.eco, showFps: data.showFps };
   }
   const old = storageOK ? fromStorage(LEGACY_STORAGE) : null;
   if (old && safeSeed(old.seed)) return { mode: GAME_MODE.CREATIVE, worlds: { creative: { ...old, generation: 1 } }, eco: old.eco };
@@ -56,7 +59,7 @@ function persist() {
   const { x, y, z, yaw, pitch, flying } = player;
   savedWorlds[mode] = { seed: world.seed, generation: world.generation, edits: Array.from(world.edits), player: { x, y, z, yaw, pitch, flying }, selection, hotbar: [...hotSlots], survival: survival?.snapshot() };
   if (!storageOK) return;
-  try { localStorage.setItem(STORAGE, JSON.stringify({ mode, worlds: savedWorlds, eco: eco.checked }));
+  try { localStorage.setItem(STORAGE, JSON.stringify({ mode, worlds: savedWorlds, eco: eco.checked, showFps: showFps.checked }));
   } catch {
     storageOK = false;
     showStorage();
@@ -153,13 +156,14 @@ function updateVitals() {
 function updateUI() {
   const map = !renderer.is3D, dead = survival?.dead;
   document.documentElement.classList.toggle('is-touch', usingTouch);
-  document.documentElement.classList.toggle('touch-play', playing && usingTouch);
+  document.documentElement.classList.toggle('touch-play', started && usingTouch);
   viewport.classList.toggle('is-survival', Boolean(survival));
   viewport.classList.toggle('is-dead', Boolean(dead));
   $('vitals').hidden = !survival;
   $('world-clock').hidden = !survival;
   updateVitals();
   for (const button of document.querySelectorAll('[data-mode]')) button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+  $('world-mode').textContent = survival ? 'Survie' : 'Créatif';
   $('mode-help').textContent = survival ? 'Récolte, fabrique et tiens jusqu’à l’aube.' : 'Blocs illimités, construction libre.';
   $('mine-command').textContent = survival ? 'Maintenir gauche' : 'Clic gauche';
   $('guide-mine').textContent = survival ? 'Maintenir clic gauche / clic droit' : 'Clic gauche / droit';
@@ -170,7 +174,9 @@ function updateUI() {
   $('ready-text').textContent = dead ? 'À réapparaître' : playing ? 'Partie en cours' : started ? 'En pause' : 'Prêt à jouer';
   $('view-label').textContent = map ? 'Vue du monde · 2D' : 'Vue du monde';
   $('game-mode').textContent = `${survival ? 'SURVIE' : player?.flying ? 'EN VOL' : 'CRÉATIF'}${map ? ' · 2D' : ''}`;
-  viewport.querySelector('.reticle').hidden = map;
+  canvas.tabIndex = playing ? 0 : -1;
+  viewport.querySelector('.reticle').hidden = map || !playing;
+  fpsMeter.hidden = !playing || !showFps.checked;
   $('pause').hidden = !playing;
   $('touch-controls').hidden = !(playing && usingTouch);
   $('touch-fly').hidden = !(playing && usingTouch && !map && !survival);
@@ -183,20 +189,46 @@ function updateUI() {
   $('guide-touch-fly').hidden = map || Boolean(survival);
   $('guide-touch-food').hidden = !survival;
   $('guide-touch-mine').textContent = survival ? 'Maintiens Miner / touche Poser' : 'Boutons Miner / Poser';
-  $('start-layer').hidden = playing;
-  $('play-label').textContent = dead ? 'Réapparaître' : started ? 'Reprendre' : 'Jouer';
-  $('play-hint').textContent = dead ? `${survival.why || 'Tu as perdu ta vie.'} Ton sac est conservé.` : map ? (usingTouch ? 'Vue 2D · Touche un bloc pour le viser' : 'Vue 2D · Vise les blocs avec le curseur') : started ? 'Retour dans ton monde' : survival ? 'Récolte du bois pour commencer.' : usingTouch ? 'Touche pour jouer' : 'Clique pour entrer dans le monde';
+  updateMenu(dead);
+  $('settings-renderer').textContent = map ? 'VUE 2D' : 'VUE 3D';
   const hint = $('footer-hint');
-  if (usingTouch) hint.textContent = map ? 'Touche un bloc pour le viser' : 'Glisse pour regarder';
+  if (!playing) hint.textContent = 'Menu du jeu';
+  else if (usingTouch) hint.textContent = map ? 'Touche un bloc pour le viser' : 'Glisse pour regarder';
   else {
     const kbd = document.createElement('kbd'); kbd.textContent = 'Échap';
-    hint.replaceChildren(kbd, document.createTextNode(map || (playing && !pointerCaptured) ? ' Mettre en pause' : ' Libérer la souris'));
+    hint.replaceChildren(kbd, document.createTextNode(' Menu de pause'));
   }
   $('guide-copy').textContent = usingTouch
     ? map ? 'En vue 2D, touche un bloc à proximité pour le viser.' : 'Glisse un doigt sur le paysage pour regarder. La croix au centre indique le bloc visé.'
     : map ? 'WebGL est indisponible. En vue 2D, vise un bloc à proximité avec le curseur.' : 'Vise un bloc avec la croix au centre de l’écran. Si la souris n’est pas capturée, glisse sur la vue ou utilise les flèches.';
   for (const id of ['guide-look', 'eco-option']) $(id).hidden = map;
   for (const id of ['guide-fly', 'guide-fly-move']) $(id).hidden = map || Boolean(survival);
+}
+
+function updateMenu(dead) {
+  $('start-layer').hidden = playing;
+  $('menu-kicker').textContent = started ? 'MINESTART · PARTIE LOCALE' : 'MINESTART · ACCUEIL';
+  $('menu-title').textContent = !started ? 'Menu principal' : dead ? 'Partie terminée' : 'Partie en pause';
+  $('menu-modes').hidden = started;
+  $('new-world').hidden = started;
+  $('menu-home').hidden = !started;
+  $('play-label').textContent = dead ? 'Réapparaître' : started ? 'Reprendre' : 'Jouer';
+  $('play-hint').textContent = dead ? `${survival.why || 'Tu as perdu ta vie.'} Ton sac est conservé.`
+    : `${worldName(world.seed)} · ${started ? (survival ? 'Survie' : 'Créatif') : (survival ? 'Récolte et survis à la nuit.' : 'Construis sans limite.')}`;
+}
+
+function resetFps() {
+  frameRate.reset();
+  fpsValue.textContent = '–';
+  fpsMeter.classList.remove('is-slow');
+  fpsMeter.hidden = !playing || !showFps.checked;
+}
+
+function updateFps(now) {
+  const value = frameRate.tick(now);
+  if (value === null) return;
+  if (fpsValue.textContent !== String(value)) fpsValue.textContent = value;
+  fpsMeter.classList.toggle('is-slow', value < 24);
 }
 
 function updateCoordinates() {
@@ -300,6 +332,7 @@ function frame(now) {
     updateCoordinates();
   }
   forceDraw = false;
+  if (playing && showFps.checked) updateFps(now);
   if (playing && !frameRequest) frameRequest = requestAnimationFrame(frame);
 }
 
@@ -316,7 +349,7 @@ function usingDrag() {
 }
 
 function startGame() {
-  if (playing || play.disabled || guide.open || worldDialog.open || inventoryDialog.open || installDialog?.open) return;
+  if (playing || play.disabled || activeDialog()) return;
   if (survival?.dead) {
     survival.respawn(); player = world.spawn(); lastVitals = '';
     persist();
@@ -325,8 +358,9 @@ function startGame() {
   playing = true;
   lastFrame = performance.now();
   lastSpace = -Infinity;
-  canvas.focus({ preventScroll: true });
+  resetFps();
   updateUI();
+  canvas.focus({ preventScroll: true });
   invalidate();
   if (!renderer.is3D || usingTouch) return;
   if (!canvas.requestPointerLock) { usingDrag(); return; }
@@ -340,12 +374,22 @@ function pauseGame() {
   if (!playing) return;
   playing = false;
   pointerCaptured = false;
+  resetFps();
   keys.clear(); touchKeys.clear(); drag = null; endMining();
   if (document.pointerLockElement === canvas) document.exitPointerLock();
   clearTimeout(toastTimer); $('toast').hidden = true;
   updateUI();
+  if (!document.hidden) play.focus({ preventScroll: true });
   persist();
   invalidate();
+}
+
+function returnToMenu() {
+  started = false;
+  if (playing) pauseGame();
+  else { updateUI(); persist(); invalidate(); }
+  if (document.fullscreenElement === card || card.classList.contains('theater')) toggleFullscreen();
+  play.focus({ preventScroll: true });
 }
 
 function updateTerrain(x, z) {
@@ -457,7 +501,6 @@ function connectCanvas() {
     announce('Affichage 3D indisponible. Le jeu continue en 2D.', 4000);
   }, { once: true });
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-  canvas.addEventListener('click', () => { if (!playing && !survival?.dead) startGame(); });
   canvas.addEventListener('pointerdown', (e) => {
     if (!playing || (e.button !== 0 && e.button !== 2)) return;
     e.preventDefault();
@@ -534,12 +577,13 @@ async function toggleFullscreen() {
 }
 
 function openDialog(dialog) {
+  if (activeDialog()) return;
   pauseGame();
   dialog.showModal();
 }
 
 function openInventory() {
-  if (inventoryDialog.open || guide.open || worldDialog.open || installDialog?.open) return;
+  if (activeDialog()) return;
   inventoryTab = 'blocks';
   $('block-search').value = '';
   inventoryMessage('');
@@ -557,6 +601,7 @@ try { renderer = new VoxelRenderer(canvas, art); connectCanvas(); }
 catch { useMap(); }
 const saved = readSave();
 eco.checked = typeof saved.eco === 'boolean' ? saved.eco : usingTouch;
+showFps.checked = saved.showFps !== false;
 mode = saved.mode;
 savedWorlds = saved.worlds;
 makeInventory();
@@ -569,6 +614,9 @@ if (location.protocol === 'file:' && $('download')) $('download').href = locatio
 
 play.addEventListener('click', startGame);
 $('pause').addEventListener('click', pauseGame);
+$('menu-home').addEventListener('click', returnToMenu);
+$('open-settings').addEventListener('click', () => openDialog(settingsDialog));
+$('menu-guide').addEventListener('click', () => openDialog(guide));
 $('fullscreen').addEventListener('click', toggleFullscreen);
 document.addEventListener('fullscreenchange', setFullscreenLabel);
 $('open-guide').addEventListener('click', () => openDialog(guide));
@@ -598,10 +646,12 @@ $('world-form').addEventListener('submit', (e) => {
   persist();
   announce('Ton nouveau monde est prêt.');
 });
-eco.addEventListener('change', () => { persist(); invalidate(); });
+eco.addEventListener('change', () => { resetFps(); persist(); invalidate(); });
+showFps.addEventListener('change', () => { resetFps(); persist(); });
 
 window.addEventListener('keydown', (e) => {
-  if (guide.open || worldDialog.open || installDialog?.open || e.ctrlKey || e.metaKey || e.altKey) return;
+  const dialog = activeDialog();
+  if ((dialog && dialog !== inventoryDialog) || e.ctrlKey || e.metaKey || e.altKey) return;
   const code = keyboardCode(e);
   const writing = e.target instanceof HTMLInputElement || e.target.isContentEditable;
   if (!writing && !e.repeat && code === 'KeyE') {
@@ -619,6 +669,15 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   if (!playing) return;
+  if (code === 'F3') {
+    e.preventDefault();
+    if (!e.repeat) {
+      showFps.checked = !showFps.checked;
+      resetFps(); saveSoon();
+      announce(showFps.checked ? 'Compteur de FPS affiché' : 'Compteur de FPS masqué');
+    }
+    return;
+  }
   if (/^(Digit|Numpad)[1-8]$/.test(code) || /^[1-8]$/.test(e.key)) {
     e.preventDefault(); select(Number(/^[1-8]$/.test(e.key) ? e.key : code.at(-1)) - 1); return;
   }
@@ -649,6 +708,7 @@ function keyboardCode(e) {
 
 document.addEventListener('pointerlockchange', () => {
   const captured = document.pointerLockElement === canvas;
+  if (captured && !playing) { document.exitPointerLock(); return; }
   if (!captured && pointerCaptured) { pauseGame(); return; }
   pointerCaptured = captured;
   if (captured) lockTime = performance.now();
@@ -697,10 +757,10 @@ function suspendGame() { if (playing) pauseGame(); else persist(); }
 document.addEventListener('visibilitychange', () => { if (document.hidden) suspendGame(); });
 window.addEventListener('minestart:pause', suspendGame);
 window.addEventListener('minestart:back', (event) => {
-  const dialog = [inventoryDialog, guide, worldDialog, installDialog].find((item) => item?.open);
+  const dialog = activeDialog();
   if (dialog) { dialog.close(); event.preventDefault(); }
   else if (playing) { pauseGame(); event.preventDefault(); }
-  else if (card.classList.contains('theater')) { toggleFullscreen(); event.preventDefault(); }
+  else if (started) { returnToMenu(); event.preventDefault(); }
 });
 window.addEventListener('pagehide', persist);
 if (window.ResizeObserver) new ResizeObserver(invalidate).observe(viewport);

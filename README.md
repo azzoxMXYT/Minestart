@@ -4,13 +4,13 @@ Minestart est un jeu de construction léger en 3D. En **Créatif**, tu disposes 
 
 ## Versions mobiles
 
-- **Android 8+** : prends `Minestart.apk` dans [la release mobile](https://github.com/azzoxMXYT/Minestart/releases/tag/mobile-v1.2.0). Ouvre le fichier sur ton appareil. Le jeu est embarqué et ne demande aucune connexion ni permission Internet. Un appareil administré peut bloquer l’installation des APK hors Google Play.
+- **Android 8+** : prends `Minestart.apk` dans [la release mobile](https://github.com/azzoxMXYT/Minestart/releases/tag/mobile-v1.3.0). Ouvre le fichier sur ton appareil. Le jeu est embarqué et ne demande aucune connexion ni permission Internet. Un appareil administré peut bloquer l’installation des APK hors Google Play.
 - **iPhone et iPad (iOS/iPadOS 16+)** : ouvre le site Minestart en HTTPS dans Safari. Choisis **Partager → Sur l’écran d’accueil → Ajouter**. Ouvre ensuite l’icône une première fois en ligne et attends **Prêt hors ligne**. C’est une application web installable (PWA), pas une `.ipa` ni une publication App Store.
 - Glisse sur le paysage pour regarder et utilise les flèches pour avancer. Appuie sur **Miner**, **Poser** ou **Saut**. En Survie, maintiens **Miner** et utilise **Poser** sur un buisson pour récolter des baies, puis l’icône baie pour manger. L’inventaire et la fabrication sont en haut de la vue. Les mondes restent sur l’appareil, sans synchronisation entre versions.
 
 ## Version Windows (.exe)
 
-Dans [la release Windows](https://github.com/azzoxMXYT/Minestart/releases/tag/v1.1.0), télécharge **`Minestart.exe`** pour un PC Windows 10 ou 11 64 bits (Intel ou AMD). Pour un PC Windows avec processeur ARM, choisis **`Minestart-arm64.exe`**.
+Dans [la release Windows](https://github.com/azzoxMXYT/Minestart/releases/tag/v1.3.0), télécharge **`Minestart.exe`** pour un PC Windows 10 ou 11 64 bits (Intel ou AMD). Pour un PC Windows avec processeur ARM, choisis **`Minestart-arm64.exe`**.
 
 Double-clique sur le fichier. Le lanceur embarque le jeu complet, sans installation, sans connexion et sans droits administrateur. Il ouvre Minestart dans une fenêtre Edge dédiée si Edge est installé, sinon dans le navigateur par défaut. Il conserve le fichier du jeu dans `%LOCALAPPDATA%\Minestart` pour garder une adresse stable pour les sauvegardes.
 
@@ -18,9 +18,10 @@ Les `.exe` ne sont pas signés. Si ton PC est réglé pour ne pas les autoriser,
 
 ## Jouer
 
-- Clique sur **Créatif** ou **Survie** dans **Monde actuel**, puis sur **Jouer**. Chaque mode conserve sa propre partie. **Nouveau monde** réinitialise seulement la partie du mode choisi. Les constructions créatives de la version 1.0 sont conservées sur le même navigateur.
+- Dans le **Menu principal**, choisis **Créatif** ou **Survie** puis **Jouer**. Chaque mode conserve sa propre partie. **Nouveau monde** réinitialise seulement la partie du mode choisi. Les constructions créatives de la version 1.0 sont conservées sur le même navigateur.
+- Appuie sur **Échap** ou sur le bouton **Pause** pour reprendre, consulter les commandes, modifier les réglages ou revenir au menu principal sans perdre ta partie. Le compteur **FPS** indique la cadence du jeu en haut à gauche. Active ou masque-le dans **Réglages → Compteur de FPS**, ou avec **F3** sur ordinateur.
 - Pour ouvrir le catalogue ou le sac à dos, appuie sur **E**. Clique sur un bloc dans l’inventaire pour l’associer à la touche du raccourci sélectionné.
-- Depuis l’aperçu, **Télécharger** fournit le jeu autonome à ouvrir hors ligne dans un navigateur récent. Si la 3D est lente, coche **Mode éco** dans **Toutes les commandes**. Si WebGL n’est pas disponible, le jeu passe en 2D : tu vises alors les blocs avec le curseur.
+- Depuis l’aperçu, **Télécharger** fournit le jeu autonome à ouvrir hors ligne dans un navigateur récent. Si la 3D est lente, active **Mode éco** dans **Réglages**. Si WebGL n’est pas disponible, le jeu passe en 2D : tu vises alors les blocs avec le curseur.
 
 ### Tes premiers pas en Survie
 
@@ -39,7 +40,8 @@ Les `.exe` ne sont pas signés. Si ton PC est réglé pour ne pas les autoriser,
 | Choisir un raccourci | `1` à `8`, molette ou barre rapide |
 | Inventaire et fabrication | `E` |
 | Manger des baies | `F` |
-| Mettre en pause | `Échap` |
+| Ouvrir le menu de pause | `Échap` |
+| Afficher / masquer le compteur de FPS | `F3` |
 
 Si le navigateur ne capture pas le pointeur, fais glisser la souris pour regarder. En Survie, maintiens le clic gauche sans glisser pour récolter un bloc.
 

@@ -1,0 +1,60 @@
+/* Keep the world visible behind the menu, without a costly live blur. */
+.start-layer {
+  position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column;
+  padding: 12px; overflow-y: auto; overscroll-behavior: contain;
+  background: radial-gradient(ellipse at center, #11180f3d, #10170da9);
+}
+.game-card:not(.is-playing) #scene { cursor: default; }
+.game-card:not(.is-playing) .inventory { visibility: hidden; }
+.game-menu {
+  flex: none; width: min(344px, 100%); margin: auto; padding: 16px;
+  display: grid; gap: 8px; border: 1px solid #a8c1816b; border-top-color: #b5cb87;
+  border-radius: 11px; background: #1a2118f5; box-shadow: 0 14px 36px #0b100b76;
+}
+.menu-head { min-width: 0; display: flex; align-items: center; gap: 11px; }
+.menu-emblem {
+  flex: 0 0 auto; width: 42px; height: 42px; display: grid; place-items: center;
+  border: 1px solid #485a35; border-radius: 8px; background: #29351f;
+}
+.menu-emblem svg { width: 29px; height: 29px; }
+.menu-kicker { margin-bottom: 3px; color: var(--lime); font: 500 9px/1.25 var(--mono); letter-spacing: .13em; }
+.game-menu h2 { font: 700 clamp(23px, 5vw, 29px)/1.05 var(--pixel); letter-spacing: -.025em; }
+#play-hint { padding: 0 0 4px; color: var(--muted); font-size: 12px; }
+.game-menu .mode-switch button { min-height: 33px; }
+.game-menu .play-button { width: 100%; min-height: 44px; margin-bottom: 3px; }
+.menu-actions { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 7px; }
+.menu-actions .button { min-width: 0; min-height: 38px; padding-inline: 5px; font-size: 12px; }
+.menu-actions .icon, .menu-footer .icon { width: 15px; height: 15px; color: #b6cc9c; }
+.menu-footer { min-height: 32px; font-size: 12px; }
+.game-menu .mode-switch { margin-bottom: 1px; }
+.is-dead .menu-kicker { color: var(--survival); }
+
+.fps-meter {
+  position: absolute; top: 47px; left: 13px; z-index: 1; display: flex; align-items: center; gap: 5px;
+  padding: 4px 7px; border: 1px solid #cbe6a54d; border-radius: 5px;
+  background: #141e17dc; color: #d5e3c9; pointer-events: none; font: 500 10px/1.25 var(--mono);
+}
+.fps-meter .icon { width: 13px; height: 13px; color: #b7d285; }
+.fps-value { min-width: 2ch; text-align: end; color: #dff69d; font-size: 12px; font-variant-numeric: tabular-nums; }
+.fps-meter.is-slow .fps-value { color: var(--survival); }
+
+.settings-heading { display: flex; align-items: center; justify-content: space-between; margin: 16px 0 8px; color: var(--dim); font: 500 10px/1.3 var(--mono); letter-spacing: .10em; }
+.settings-renderer { padding: 3px 6px; border: 1px solid #49583b; border-radius: 4px; background: #293421; color: #d0e6ac; }
+.settings-list { display: grid; gap: 6px; }
+.setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid #384333; border-radius: 6px; background: #22291e; cursor: pointer; }
+.setting strong { display: block; font-size: 14px; font-weight: 600; }
+.setting-help { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.toggle { appearance: none; flex: 0 0 40px; margin: 0; height: 23px; border-radius: 20px; border: 1px solid #59664b; background: #333c2b; cursor: pointer; }
+.toggle::before { content: ''; display: block; width: 15px; height: 15px; border-radius: 50%; margin: 3px; background: #b3bdab; transition: transform .16s; }
+.toggle:checked { background: #718843; border-color: #9eba61; }
+.toggle:checked::before { transform: translateX(17px); background: #f2ffdf; }
+.is-touch .menu-actions .button, .is-touch .settings-list .setting { min-height: 44px; }
+.is-touch .menu-footer { min-height: 38px; }
+
+@media (max-width: 540px) {
+  .game-menu { padding: 12px; gap: 7px; }
+  .game-menu .mode-switch button { min-height: 35px; }
+  .game-menu .play-button { min-height: 43px; }
+  .is-touch:not(.touch-play) .game-card .viewport { height: clamp(325px, 86vw, 430px); }
+  .fps-meter { top: 36px; left: 8px; }
+}

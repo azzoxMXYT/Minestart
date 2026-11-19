@@ -409,7 +409,6 @@ h1, h2, p, dl, dd { margin: 0; }
 .reticle::before, .reticle::after { position: absolute; content: ''; background: #fff; }
 .reticle::before { top: 7px; left: 1px; height: 2px; width: 14px; }
 .reticle::after { top: 1px; left: 7px; height: 14px; width: 2px; }
-.start-layer { position: absolute; top: 65%; left: 50%; transform: translate(-50%,-50%); display: grid; justify-items: center; gap: 9px; white-space: nowrap; pointer-events: none; }
 .play-button {
   pointer-events: auto; display: inline-flex; justify-content: center; align-items: center; gap: 10px; min-width: 148px; min-height: 48px;
   padding: 8px 22px; color: #1b260e; background: var(--lime); border: 1px solid #e2f7a0; border-bottom: 3px solid #89a646;
@@ -419,7 +418,6 @@ h1, h2, p, dl, dd { margin: 0; }
 .play-button .icon { width: 20px; height: 20px; }
 .play-button:hover { background: #e1f7a3; transform: translateY(-2px); box-shadow: 0 6px 0 #354422,0 10px 26px #0c160e74; }
 .play-button:active { transform: translateY(2px); box-shadow: 0 2px 0 #354422,0 6px 18px #0c160e74; }
-#play-hint { color: #f2f7e9; background: #171e14b5; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; letter-spacing: .01em; }
 .inventory { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); display: grid; justify-items: center; gap: 6px; pointer-events: none; }
 .block-caption { color: #fafbee; background: #151d13c7; padding: 2px 8px; border-radius: 4px; font: 500 10px/1.5 var(--mono); }
 .hotbar { display: flex; gap: 4px; border: 1px solid #a6b69957; padding: 4px; border-radius: 8px; background: #11190ded; box-shadow: 0 3px 12px #10160e76; pointer-events: auto; }
@@ -448,8 +446,6 @@ kbd { display: inline-flex; align-items: center; justify-content: center; min-wi
 .world-facts dt, .controls dt { color: var(--muted); font-size: 13px; }
 .mode-value { color: #d9eab9; font-size: 13px; font-weight: 600; }
 .seed-value { color: #d5dbc9; font: 500 12px/1.3 var(--mono); letter-spacing: .05em; }
-.new-world { width: 100%; }
-.new-world .icon { color: #b3c69e; width: 16px; height: 16px; }
 .controls-panel { display: flex; flex: 1; flex-direction: column; }
 .controls-panel h2 { color: var(--text); font: 700 19px/1.2 var(--body); letter-spacing: -.02em; }
 .controls { margin-top: 10px; }
@@ -497,13 +493,7 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
 .guide-controls > div { min-height: 35px; }
 .guide-controls dd { text-align: right; }
 .guide-controls dd span { color: var(--muted); }
-.eco-option { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 17px; }
-.eco-option label, .seed-label { font-size: 14px; font-weight: 600; }
-.eco-option p { margin-top: 3px; font-size: 12px; color: var(--muted); }
-#eco { appearance: none; flex: 0 0 36px; margin: 0; height: 20px; border-radius: 20px; border: 1px solid #59664b; background: #333c2b; cursor: pointer; }
-#eco::before { content: ''; display: block; width: 14px; height: 14px; border-radius: 50%; margin: 2px; background: #b3bdab; transition: transform .16s; }
-#eco:checked { background: #718843; border-color: #9eba61; }
-#eco:checked::before { transform: translateX(16px); background: #eff9db; }
+.seed-label { font-size: 14px; font-weight: 600; }
 .seed-label span { color: var(--dim); font-size: 12px; font-weight: 400; }
 .seed-field { display: flex; margin-top: 6px; gap: 7px; }
 .seed-field input { min-width: 0; flex: 1; padding: 8px 10px; border: 1px solid #4b5b40; background: #14180f; border-radius: 6px; color: var(--text); font: 500 13px/1.2 var(--mono); }
@@ -553,7 +543,6 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
   .game-heading { font-size: 10px; gap: 5px; }
   .game-footer { font-size: 10px; }
   .viewport { height: clamp(330px,84vw,430px); }
-  .start-layer { top: 61%; }
   .coordinates { top: 9px; left: 8px; gap: 6px; font-size: 9px; }
   .game-tag { top: 9px; right: 8px; font-size: 9px; }
   .hotbar { gap: 3px; padding: 3px; }
@@ -599,7 +588,6 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
 .damage-flash.is-hit { animation: hit-flash .38s ease-out; }
 @keyframes hit-flash { from { opacity: .67; } to { opacity: 0; } }
 .viewport.is-dead .damage-flash { opacity: .35; background: #39151555; }
-.viewport.is-dead .start-layer { z-index: 1; }
 .slot-count { position: absolute; bottom: 2px; right: 3px; min-width: 11px; padding: 0 1px; border-radius: 2px; background: #101b10bd; color: #f5f5e6; font: 500 9px/1.2 var(--mono); pointer-events: none; }
 .slot.is-empty { background: #20291d; }
 .slot.is-empty[aria-pressed="true"] { background: #43552a; }
@@ -645,7 +633,6 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
   .vital-unit { width: 10px; height: 10px; }
   .vital-meter { gap: 1px; }
   .vitals { gap: 5px; }
-  .viewport.is-survival .start-layer { top: 56%; }
   .viewport.is-survival .touch-controls { bottom: 99px; }
   .catalogue-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
 }
@@ -656,10 +643,9 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
 @media (prefers-reduced-motion: reduce) { .damage-flash.is-hit { animation: none; } }
 
 .aimed-mob .reticle::before, .aimed-mob .reticle::after { background: var(--survival); }
-.viewport.is-dead #play-hint { max-width: min(450px,75vw); white-space: normal; text-align: center; }
 
 /* Installed-app chrome and touch controls. Desktop keeps the original layout. */
-.mobile-modes, .touch-command-summary, .touch-guide { display: none; }
+.touch-command-summary, .touch-guide { display: none; }
 .app-action { gap: 6px; min-height: 36px; }
 .app-state { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font: 500 10px/1.45 var(--mono); letter-spacing: .025em; }
 .app-state::before { content: ''; width: 5px; height: 5px; border-radius: 1px; background: #9a9d89; }
@@ -673,9 +659,7 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 .is-touch .tap-target, .is-touch .game-actions > button, .is-touch .dialog-close { min-width: 44px; min-height: 44px; }
-.is-touch .mobile-modes { display: grid; margin: 8px 9px; }
-.is-touch .mobile-modes button { min-height: 38px; font-size: 13px; }
-.is-touch .world-panel .mode-switch, .is-touch .desktop-guide, .is-touch .game-actions kbd,
+.is-touch .desktop-guide, .is-touch .game-actions kbd,
 .is-touch #eat kbd, .is-touch #fullscreen { display: none; }
 .is-touch .touch-guide, .is-touch .touch-command-summary { display: block; }
 .touch-command-summary { color: var(--muted); font-size: 13px; margin: 11px 0 2px; }
@@ -696,9 +680,10 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
   position: fixed; z-index: 10; inset: 0; width: 100%; height: 100%; height: 100dvh;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   background: var(--bar); border: 0; border-radius: 0; user-select: none; -webkit-user-select: none;
-  -webkit-touch-callout: none; touch-action: none;
+  -webkit-touch-callout: none;
 }
-.touch-play .game-card .mobile-modes, .touch-play .game-footer { display: none; }
+.touch-play .game-card.is-playing { touch-action: none; }
+.touch-play .game-footer { display: none; }
 .touch-play .game-bar { min-height: 49px; flex: none; padding-inline: 10px; }
 .touch-play .viewport { height: 0; flex: 1 1 auto; }
 .touch-play .inventory { bottom: 10px; }
@@ -723,7 +708,6 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
 .is-touch .touch-actions button { grid-template-rows: auto auto; align-content: center; gap: 2px; }
 .is-touch .touch-actions .icon { width: 17px; height: 17px; }
 .is-touch .touch-actions span { font: 600 9px/1 var(--body); }
-.is-touch #play-hint { max-width: min(430px, 82vw); white-space: normal; text-align: center; }
 
 @media (orientation: landscape) and (min-width: 700px) {
   .touch-play .touch-controls, .touch-play .is-survival .touch-controls { bottom: 12px; }
@@ -737,13 +721,73 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
   .is-touch .game-actions { gap: 0; }
   .is-touch .game-actions .inventory-toggle { padding-inline: 6px; }
   .is-touch .game-actions .inventory-toggle span { font-size: 12px; }
-  .is-touch .game-card:not(.is-playing) .viewport { height: clamp(299px, 82vw, 434px); }
   .is-touch .game-footer { min-height: 37px; }
   .is-touch .touch-tool { min-width: 41px; }
 }
 @media (max-width: 350px) {
   .touch-play .game-heading .icon { display: none; }
   .touch-play .game-heading { letter-spacing: .02em; }
+}
+
+/* Keep the world visible behind the menu, without a costly live blur. */
+.start-layer {
+  position: absolute; inset: 0; z-index: 2; display: flex; flex-direction: column;
+  padding: 12px; overflow-y: auto; overscroll-behavior: contain;
+  background: radial-gradient(ellipse at center, #11180f3d, #10170da9);
+}
+.game-card:not(.is-playing) #scene { cursor: default; }
+.game-card:not(.is-playing) .inventory { visibility: hidden; }
+.game-menu {
+  flex: none; width: min(344px, 100%); margin: auto; padding: 16px;
+  display: grid; gap: 8px; border: 1px solid #a8c1816b; border-top-color: #b5cb87;
+  border-radius: 11px; background: #1a2118f5; box-shadow: 0 14px 36px #0b100b76;
+}
+.menu-head { min-width: 0; display: flex; align-items: center; gap: 11px; }
+.menu-emblem {
+  flex: 0 0 auto; width: 42px; height: 42px; display: grid; place-items: center;
+  border: 1px solid #485a35; border-radius: 8px; background: #29351f;
+}
+.menu-emblem svg { width: 29px; height: 29px; }
+.menu-kicker { margin-bottom: 3px; color: var(--lime); font: 500 9px/1.25 var(--mono); letter-spacing: .13em; }
+.game-menu h2 { font: 700 clamp(23px, 5vw, 29px)/1.05 var(--pixel); letter-spacing: -.025em; }
+#play-hint { padding: 0 0 4px; color: var(--muted); font-size: 12px; }
+.game-menu .mode-switch button { min-height: 33px; }
+.game-menu .play-button { width: 100%; min-height: 44px; margin-bottom: 3px; }
+.menu-actions { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 7px; }
+.menu-actions .button { min-width: 0; min-height: 38px; padding-inline: 5px; font-size: 12px; }
+.menu-actions .icon, .menu-footer .icon { width: 15px; height: 15px; color: #b6cc9c; }
+.menu-footer { min-height: 32px; font-size: 12px; }
+.game-menu .mode-switch { margin-bottom: 1px; }
+.is-dead .menu-kicker { color: var(--survival); }
+
+.fps-meter {
+  position: absolute; top: 47px; left: 13px; z-index: 1; display: flex; align-items: center; gap: 5px;
+  padding: 4px 7px; border: 1px solid #cbe6a54d; border-radius: 5px;
+  background: #141e17dc; color: #d5e3c9; pointer-events: none; font: 500 10px/1.25 var(--mono);
+}
+.fps-meter .icon { width: 13px; height: 13px; color: #b7d285; }
+.fps-value { min-width: 2ch; text-align: end; color: #dff69d; font-size: 12px; font-variant-numeric: tabular-nums; }
+.fps-meter.is-slow .fps-value { color: var(--survival); }
+
+.settings-heading { display: flex; align-items: center; justify-content: space-between; margin: 16px 0 8px; color: var(--dim); font: 500 10px/1.3 var(--mono); letter-spacing: .10em; }
+.settings-renderer { padding: 3px 6px; border: 1px solid #49583b; border-radius: 4px; background: #293421; color: #d0e6ac; }
+.settings-list { display: grid; gap: 6px; }
+.setting { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid #384333; border-radius: 6px; background: #22291e; cursor: pointer; }
+.setting strong { display: block; font-size: 14px; font-weight: 600; }
+.setting-help { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+.toggle { appearance: none; flex: 0 0 40px; margin: 0; height: 23px; border-radius: 20px; border: 1px solid #59664b; background: #333c2b; cursor: pointer; }
+.toggle::before { content: ''; display: block; width: 15px; height: 15px; border-radius: 50%; margin: 3px; background: #b3bdab; transition: transform .16s; }
+.toggle:checked { background: #718843; border-color: #9eba61; }
+.toggle:checked::before { transform: translateX(17px); background: #f2ffdf; }
+.is-touch .menu-actions .button, .is-touch .settings-list .setting { min-height: 44px; }
+.is-touch .menu-footer { min-height: 38px; }
+
+@media (max-width: 540px) {
+  .game-menu { padding: 12px; gap: 7px; }
+  .game-menu .mode-switch button { min-height: 35px; }
+  .game-menu .play-button { min-height: 43px; }
+  .is-touch:not(.touch-play) .game-card .viewport { height: clamp(325px, 86vw, 430px); }
+  .fps-meter { top: 36px; left: 8px; }
 }
 </style>
 </head>
@@ -778,6 +822,9 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
     <symbol id="i-jump" viewBox="0 0 24 24"><path d="M12 17V4m-5 5 5-5 5 5M5 21h14"/></symbol>
     <symbol id="i-fly" viewBox="0 0 24 24"><path d="m3 12 9-7 9 7M6 16l6-5 6 5m-6-4v8"/></symbol>
     <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v16m-5-5 5 5 5-5"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h5m4 0h7M4 17h10m4 0h2"/><circle cx="11" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></symbol>
+    <symbol id="i-fps" viewBox="0 0 24 24"><path d="M5 19v-4m5 4v-7m5 7V8m5 11V4"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8m-16-1v10h14V10m-9 10v-6h4v6"/></symbol>
     <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14m6-14v14" stroke-width="2.8"/></symbol>
     <symbol id="i-bag" viewBox="0 0 24 24"><path d="M8 7V5a4 4 0 0 1 8 0v2M5 7h14l2 13H3zM8 11h8m-8 4h8"/></symbol>
     <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 4-3.3 7-8 9-4.7-2-8-5-8-9V6z"/><path d="M12 7v9m-3-6h6"/></symbol>
@@ -818,14 +865,10 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
           <div class="game-actions">
             <button class="bare-button touch-tool" id="touch-fly" type="button" aria-label="Vol créatif" title="Vol créatif" aria-pressed="false" hidden><svg class="icon" aria-hidden="true"><use href="#i-fly"/></svg></button>
             <button class="bare-button touch-tool" id="touch-eat" type="button" aria-label="Manger une baie" title="Manger une baie" hidden><svg class="icon" aria-hidden="true"><use href="#i-food-pixel"/></svg></button>
-            <button class="bare-button pause" id="pause" type="button" aria-label="Mettre en pause" title="Mettre en pause (Échap)" hidden><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg></button>
+            <button class="bare-button pause" id="pause" type="button" aria-label="Mettre en pause" title="Menu de pause (Échap)" aria-controls="start-layer" hidden><svg class="icon" aria-hidden="true"><use href="#i-pause"/></svg></button>
             <button class="bare-button inventory-toggle" id="open-inventory" type="button" aria-label="Inventaire (E)"><svg class="icon" aria-hidden="true"><use href="#i-bag"/></svg><span>Inventaire</span><kbd>E</kbd></button>
             <button class="bare-button fullscreen" id="fullscreen" type="button" aria-pressed="false"><svg class="icon" aria-hidden="true"><use id="fullscreen-icon" href="#i-expand"/></svg><span id="fullscreen-label">Plein écran</span></button>
           </div>
-        </div>
-        <div class="mode-switch mobile-modes" role="group" aria-label="Mode de jeu">
-          <button type="button" data-mode="creative" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-blocks"/></svg>Créatif</button>
-          <button type="button" data-mode="survival" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>Survie</button>
         </div>
         <div class="viewport" id="viewport">
           <canvas id="scene" tabindex="0" aria-label="Monde de blocs interactif"></canvas>
@@ -834,14 +877,33 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
             <svg class="icon" aria-hidden="true"><use href="#i-crosshair"/></svg>
             <span><b>X</b> <span id="coord-x">52</span></span><span><b>Y</b> <span id="coord-y">20</span></span><span><b>Z</b> <span id="coord-z">93</span></span>
           </div>
+          <div class="fps-meter" id="fps-meter" title="Cadence du jeu, en images par seconde" hidden>
+            <svg class="icon" aria-hidden="true"><use href="#i-fps"/></svg><span class="fps-value" id="fps-value">–</span><span>FPS</span>
+          </div>
           <div class="game-tag" id="game-tag"><span></span><b id="game-mode">CRÉATIF</b></div>
           <div class="world-clock" id="world-clock" hidden><svg class="icon" aria-hidden="true"><use id="clock-icon" href="#i-sun"/></svg><span id="clock-text">Jour 1 · 08:00</span></div>
           <div class="reticle" aria-hidden="true"></div>
           <div class="mine-meter" id="mine-meter" aria-hidden="true" hidden><span></span></div>
           <div class="damage-flash" id="damage-flash" aria-hidden="true"></div>
           <div class="start-layer" id="start-layer">
-            <button class="play-button" id="play" type="button" disabled><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span id="play-label">Jouer</span></button>
-            <div id="play-hint">Clique pour entrer dans le monde</div>
+            <section class="game-menu" aria-labelledby="menu-title">
+              <div class="menu-head">
+                <span class="menu-emblem"><svg aria-hidden="true"><use href="#logo"/></svg></span>
+                <div><div class="menu-kicker" id="menu-kicker">MINESTART · ACCUEIL</div><h2 id="menu-title">Menu principal</h2></div>
+              </div>
+              <p id="play-hint">Vallon vert · Choisis ton mode de jeu.</p>
+              <div class="mode-switch" id="menu-modes" role="group" aria-label="Mode de jeu">
+                <button type="button" data-mode="creative" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-blocks"/></svg>Créatif</button>
+                <button type="button" data-mode="survival" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>Survie</button>
+              </div>
+              <button class="play-button" id="play" type="button" disabled><svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span id="play-label">Jouer</span></button>
+              <div class="menu-actions">
+                <button class="button" id="open-settings" type="button"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg>Réglages</button>
+                <button class="button" id="menu-guide" type="button"><svg class="icon" aria-hidden="true"><use href="#i-keyboard"/></svg>Commandes</button>
+              </div>
+              <button class="bare-button menu-footer" id="new-world" type="button"><svg class="icon" aria-hidden="true"><use href="#i-rotate"/></svg>Nouveau monde</button>
+              <button class="bare-button menu-footer" id="menu-home" type="button" hidden><svg class="icon" aria-hidden="true"><use href="#i-home"/></svg>Menu principal</button>
+            </section>
           </div>
           <div class="toast" id="toast" role="status" hidden></div>
           <div class="touch-controls" id="touch-controls" hidden>
@@ -879,15 +941,11 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
         <section class="panel world-panel" aria-labelledby="world-name">
           <div class="section-kicker"><span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-map"/></svg></span><span>MONDE ACTUEL</span></div>
           <h2 class="world-name" id="world-name">Vallon vert</h2>
-          <div class="mode-switch" role="group" aria-label="Mode de jeu">
-            <button type="button" data-mode="creative" aria-pressed="true"><svg class="icon" aria-hidden="true"><use href="#i-blocks"/></svg>Créatif</button>
-            <button type="button" data-mode="survival" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>Survie</button>
-          </div>
-          <p class="mode-help" id="mode-help">Blocs illimités, construction libre.</p>
           <dl class="world-facts">
+            <div><dt>Mode</dt><dd id="world-mode" class="mode-value">Créatif</dd></div>
             <div><dt>Graine</dt><dd id="world-seed" class="seed-value">084217</dd></div>
           </dl>
-          <button class="button new-world" id="new-world" type="button"><svg class="icon" aria-hidden="true"><use href="#i-rotate"/></svg><span>Nouveau monde</span></button>
+          <p class="mode-help" id="mode-help">Blocs illimités, construction libre.</p>
         </section>
 
         <section class="panel controls-panel" aria-labelledby="controls-title">
@@ -932,7 +990,8 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
       <div id="guide-berries" hidden><dt>Récolter des baies</dt><dd>Clic droit sur un buisson</dd></div>
       <div id="guide-eat" hidden><dt>Manger les baies</dt><dd><kbd>F</kbd></dd></div>
       <div><dt>Choisir un bloc</dt><dd><kbd>1</kbd> – <kbd>8</kbd> ou molette</dd></div>
-      <div><dt>Mettre en pause</dt><dd><kbd>Échap</kbd></dd></div>
+      <div><dt>Ouvrir le menu de pause</dt><dd><kbd>Échap</kbd></dd></div>
+      <div><dt>Afficher / masquer les FPS</dt><dd><kbd>F3</kbd></dd></div>
     </dl>
     <dl class="controls guide-controls touch-guide">
       <div><dt>Se déplacer</dt><dd>Flèches à gauche</dd></div>
@@ -942,8 +1001,28 @@ dialog::backdrop { background: #080c08bd; backdrop-filter: blur(3px); }
       <div id="guide-touch-food" hidden><dt>Récolter / manger</dt><dd>Poser sur un buisson / icône baie</dd></div>
       <div><dt>Choisir un bloc</dt><dd>Touche la barre rapide</dd></div>
       <div><dt>Fabriquer</dt><dd>Inventaire → Fabrication (Survie)</dd></div>
+      <div><dt>Ouvrir le menu de pause</dt><dd>Bouton Pause en haut de la vue</dd></div>
     </dl>
-    <div class="eco-option" id="eco-option"><div><label for="eco">Mode éco</label><p>Réduit la définition et la fréquence d’affichage.</p></div><input type="checkbox" id="eco" role="switch"></div>
+  </dialog>
+
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <form method="dialog" class="dialog-head">
+      <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-settings"/></svg></span>
+      <h2 id="settings-title">Réglages</h2>
+      <button type="submit" class="bare-button dialog-close" aria-label="Fermer"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </form>
+    <div class="settings-heading"><span>AFFICHAGE</span><span class="settings-renderer" id="settings-renderer">3D</span></div>
+    <div class="settings-list">
+      <label class="setting">
+        <span><strong id="fps-label">Compteur de FPS</strong><span class="setting-help" id="fps-help">Affiche la cadence du jeu, en images par seconde.</span></span>
+        <input class="toggle" id="show-fps" type="checkbox" role="switch" aria-labelledby="fps-label" aria-describedby="fps-help" checked>
+      </label>
+      <label class="setting" id="eco-option">
+        <span><strong id="eco-label">Mode éco</strong><span class="setting-help" id="eco-help">Réduit la définition et limite la cadence pour les appareils moins puissants.</span></span>
+        <input class="toggle" id="eco" type="checkbox" role="switch" aria-labelledby="eco-label" aria-describedby="eco-help">
+      </label>
+    </div>
+    <form method="dialog" class="dialog-actions"><button class="button primary" type="submit">Retour au menu <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></button></form>
   </dialog>
 
   <dialog id="world-dialog" aria-labelledby="new-title">
@@ -2661,11 +2740,41 @@ function refreshInventory() {
     : 'Ton sac est vide. Maintiens le clic gauche sur un bloc pour le récolter.';
 }
 
+// Count game frames that pass the frame limiter, not every browser animation callback.
+class FrameRate {
+  constructor(windowMs = 600) {
+    this.windowMs = windowMs;
+    this.reset();
+  }
+
+  reset() {
+    this.start = null;
+    this.frames = 0;
+  }
+
+  tick(now) {
+    if (this.start === null) {
+      this.start = now;
+      return null;
+    }
+    this.frames++;
+    const elapsed = now - this.start;
+    if (elapsed < this.windowMs) return null;
+    const rate = Math.round(this.frames * 1000 / elapsed);
+    this.start = now;
+    this.frames = 0;
+    return rate;
+  }
+}
+
 const $ = (id) => document.getElementById(id);
 const card = $('game-card'), viewport = $('viewport'), hotbar = $('hotbar');
 const play = $('play'), guide = $('guide-dialog'), worldDialog = $('world-dialog');
-const eco = $('eco'), seedInput = $('seed-input');
-const inventoryDialog = $('inventory-dialog'), installDialog = $('install-dialog');
+const eco = $('eco'), showFps = $('show-fps'), seedInput = $('seed-input');
+const settingsDialog = $('settings-dialog'), inventoryDialog = $('inventory-dialog'), installDialog = $('install-dialog');
+const dialogs = [inventoryDialog, settingsDialog, guide, worldDialog, installDialog].filter(Boolean);
+const activeDialog = () => dialogs.find((dialog) => dialog.open);
+const fpsMeter = $('fps-meter'), fpsValue = $('fps-value'), frameRate = new FrameRate();
 const appEdition = document.documentElement.dataset.edition;
 const STORAGE = 'minestart:2', LEGACY_STORAGE = 'minestart:1';
 const safeSeed = (value) => Number.isInteger(value) && value >= 0 && value < 1000000;
@@ -2700,7 +2809,7 @@ function readSave() {
   if (data && typeof data.worlds === 'object' && data.worlds) {
     const worlds = {};
     for (const name of Object.values(GAME_MODE)) if (safeSeed(data.worlds[name]?.seed)) worlds[name] = data.worlds[name];
-    return { mode: data.mode === GAME_MODE.SURVIVAL ? GAME_MODE.SURVIVAL : GAME_MODE.CREATIVE, worlds, eco: data.eco };
+    return { mode: data.mode === GAME_MODE.SURVIVAL ? GAME_MODE.SURVIVAL : GAME_MODE.CREATIVE, worlds, eco: data.eco, showFps: data.showFps };
   }
   const old = storageOK ? fromStorage(LEGACY_STORAGE) : null;
   if (old && safeSeed(old.seed)) return { mode: GAME_MODE.CREATIVE, worlds: { creative: { ...old, generation: 1 } }, eco: old.eco };
@@ -2719,7 +2828,7 @@ function persist() {
   const { x, y, z, yaw, pitch, flying } = player;
   savedWorlds[mode] = { seed: world.seed, generation: world.generation, edits: Array.from(world.edits), player: { x, y, z, yaw, pitch, flying }, selection, hotbar: [...hotSlots], survival: survival?.snapshot() };
   if (!storageOK) return;
-  try { localStorage.setItem(STORAGE, JSON.stringify({ mode, worlds: savedWorlds, eco: eco.checked }));
+  try { localStorage.setItem(STORAGE, JSON.stringify({ mode, worlds: savedWorlds, eco: eco.checked, showFps: showFps.checked }));
   } catch {
     storageOK = false;
     showStorage();
@@ -2816,13 +2925,14 @@ function updateVitals() {
 function updateUI() {
   const map = !renderer.is3D, dead = survival?.dead;
   document.documentElement.classList.toggle('is-touch', usingTouch);
-  document.documentElement.classList.toggle('touch-play', playing && usingTouch);
+  document.documentElement.classList.toggle('touch-play', started && usingTouch);
   viewport.classList.toggle('is-survival', Boolean(survival));
   viewport.classList.toggle('is-dead', Boolean(dead));
   $('vitals').hidden = !survival;
   $('world-clock').hidden = !survival;
   updateVitals();
   for (const button of document.querySelectorAll('[data-mode]')) button.setAttribute('aria-pressed', String(button.dataset.mode === mode));
+  $('world-mode').textContent = survival ? 'Survie' : 'Créatif';
   $('mode-help').textContent = survival ? 'Récolte, fabrique et tiens jusqu’à l’aube.' : 'Blocs illimités, construction libre.';
   $('mine-command').textContent = survival ? 'Maintenir gauche' : 'Clic gauche';
   $('guide-mine').textContent = survival ? 'Maintenir clic gauche / clic droit' : 'Clic gauche / droit';
@@ -2833,7 +2943,9 @@ function updateUI() {
   $('ready-text').textContent = dead ? 'À réapparaître' : playing ? 'Partie en cours' : started ? 'En pause' : 'Prêt à jouer';
   $('view-label').textContent = map ? 'Vue du monde · 2D' : 'Vue du monde';
   $('game-mode').textContent = `${survival ? 'SURVIE' : player?.flying ? 'EN VOL' : 'CRÉATIF'}${map ? ' · 2D' : ''}`;
-  viewport.querySelector('.reticle').hidden = map;
+  canvas.tabIndex = playing ? 0 : -1;
+  viewport.querySelector('.reticle').hidden = map || !playing;
+  fpsMeter.hidden = !playing || !showFps.checked;
   $('pause').hidden = !playing;
   $('touch-controls').hidden = !(playing && usingTouch);
   $('touch-fly').hidden = !(playing && usingTouch && !map && !survival);
@@ -2846,20 +2958,46 @@ function updateUI() {
   $('guide-touch-fly').hidden = map || Boolean(survival);
   $('guide-touch-food').hidden = !survival;
   $('guide-touch-mine').textContent = survival ? 'Maintiens Miner / touche Poser' : 'Boutons Miner / Poser';
-  $('start-layer').hidden = playing;
-  $('play-label').textContent = dead ? 'Réapparaître' : started ? 'Reprendre' : 'Jouer';
-  $('play-hint').textContent = dead ? `${survival.why || 'Tu as perdu ta vie.'} Ton sac est conservé.` : map ? (usingTouch ? 'Vue 2D · Touche un bloc pour le viser' : 'Vue 2D · Vise les blocs avec le curseur') : started ? 'Retour dans ton monde' : survival ? 'Récolte du bois pour commencer.' : usingTouch ? 'Touche pour jouer' : 'Clique pour entrer dans le monde';
+  updateMenu(dead);
+  $('settings-renderer').textContent = map ? 'VUE 2D' : 'VUE 3D';
   const hint = $('footer-hint');
-  if (usingTouch) hint.textContent = map ? 'Touche un bloc pour le viser' : 'Glisse pour regarder';
+  if (!playing) hint.textContent = 'Menu du jeu';
+  else if (usingTouch) hint.textContent = map ? 'Touche un bloc pour le viser' : 'Glisse pour regarder';
   else {
     const kbd = document.createElement('kbd'); kbd.textContent = 'Échap';
-    hint.replaceChildren(kbd, document.createTextNode(map || (playing && !pointerCaptured) ? ' Mettre en pause' : ' Libérer la souris'));
+    hint.replaceChildren(kbd, document.createTextNode(' Menu de pause'));
   }
   $('guide-copy').textContent = usingTouch
     ? map ? 'En vue 2D, touche un bloc à proximité pour le viser.' : 'Glisse un doigt sur le paysage pour regarder. La croix au centre indique le bloc visé.'
     : map ? 'WebGL est indisponible. En vue 2D, vise un bloc à proximité avec le curseur.' : 'Vise un bloc avec la croix au centre de l’écran. Si la souris n’est pas capturée, glisse sur la vue ou utilise les flèches.';
   for (const id of ['guide-look', 'eco-option']) $(id).hidden = map;
   for (const id of ['guide-fly', 'guide-fly-move']) $(id).hidden = map || Boolean(survival);
+}
+
+function updateMenu(dead) {
+  $('start-layer').hidden = playing;
+  $('menu-kicker').textContent = started ? 'MINESTART · PARTIE LOCALE' : 'MINESTART · ACCUEIL';
+  $('menu-title').textContent = !started ? 'Menu principal' : dead ? 'Partie terminée' : 'Partie en pause';
+  $('menu-modes').hidden = started;
+  $('new-world').hidden = started;
+  $('menu-home').hidden = !started;
+  $('play-label').textContent = dead ? 'Réapparaître' : started ? 'Reprendre' : 'Jouer';
+  $('play-hint').textContent = dead ? `${survival.why || 'Tu as perdu ta vie.'} Ton sac est conservé.`
+    : `${worldName(world.seed)} · ${started ? (survival ? 'Survie' : 'Créatif') : (survival ? 'Récolte et survis à la nuit.' : 'Construis sans limite.')}`;
+}
+
+function resetFps() {
+  frameRate.reset();
+  fpsValue.textContent = '–';
+  fpsMeter.classList.remove('is-slow');
+  fpsMeter.hidden = !playing || !showFps.checked;
+}
+
+function updateFps(now) {
+  const value = frameRate.tick(now);
+  if (value === null) return;
+  if (fpsValue.textContent !== String(value)) fpsValue.textContent = value;
+  fpsMeter.classList.toggle('is-slow', value < 24);
 }
 
 function updateCoordinates() {
@@ -2963,6 +3101,7 @@ function frame(now) {
     updateCoordinates();
   }
   forceDraw = false;
+  if (playing && showFps.checked) updateFps(now);
   if (playing && !frameRequest) frameRequest = requestAnimationFrame(frame);
 }
 
@@ -2979,7 +3118,7 @@ function usingDrag() {
 }
 
 function startGame() {
-  if (playing || play.disabled || guide.open || worldDialog.open || inventoryDialog.open || installDialog?.open) return;
+  if (playing || play.disabled || activeDialog()) return;
   if (survival?.dead) {
     survival.respawn(); player = world.spawn(); lastVitals = '';
     persist();
@@ -2988,8 +3127,9 @@ function startGame() {
   playing = true;
   lastFrame = performance.now();
   lastSpace = -Infinity;
-  canvas.focus({ preventScroll: true });
+  resetFps();
   updateUI();
+  canvas.focus({ preventScroll: true });
   invalidate();
   if (!renderer.is3D || usingTouch) return;
   if (!canvas.requestPointerLock) { usingDrag(); return; }
@@ -3003,12 +3143,22 @@ function pauseGame() {
   if (!playing) return;
   playing = false;
   pointerCaptured = false;
+  resetFps();
   keys.clear(); touchKeys.clear(); drag = null; endMining();
   if (document.pointerLockElement === canvas) document.exitPointerLock();
   clearTimeout(toastTimer); $('toast').hidden = true;
   updateUI();
+  if (!document.hidden) play.focus({ preventScroll: true });
   persist();
   invalidate();
+}
+
+function returnToMenu() {
+  started = false;
+  if (playing) pauseGame();
+  else { updateUI(); persist(); invalidate(); }
+  if (document.fullscreenElement === card || card.classList.contains('theater')) toggleFullscreen();
+  play.focus({ preventScroll: true });
 }
 
 function updateTerrain(x, z) {
@@ -3120,7 +3270,6 @@ function connectCanvas() {
     announce('Affichage 3D indisponible. Le jeu continue en 2D.', 4000);
   }, { once: true });
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-  canvas.addEventListener('click', () => { if (!playing && !survival?.dead) startGame(); });
   canvas.addEventListener('pointerdown', (e) => {
     if (!playing || (e.button !== 0 && e.button !== 2)) return;
     e.preventDefault();
@@ -3197,12 +3346,13 @@ async function toggleFullscreen() {
 }
 
 function openDialog(dialog) {
+  if (activeDialog()) return;
   pauseGame();
   dialog.showModal();
 }
 
 function openInventory() {
-  if (inventoryDialog.open || guide.open || worldDialog.open || installDialog?.open) return;
+  if (activeDialog()) return;
   inventoryTab = 'blocks';
   $('block-search').value = '';
   inventoryMessage('');
@@ -3220,6 +3370,7 @@ try { renderer = new VoxelRenderer(canvas, art); connectCanvas(); }
 catch { useMap(); }
 const saved = readSave();
 eco.checked = typeof saved.eco === 'boolean' ? saved.eco : usingTouch;
+showFps.checked = saved.showFps !== false;
 mode = saved.mode;
 savedWorlds = saved.worlds;
 makeInventory();
@@ -3232,6 +3383,9 @@ if (location.protocol === 'file:' && $('download')) $('download').href = locatio
 
 play.addEventListener('click', startGame);
 $('pause').addEventListener('click', pauseGame);
+$('menu-home').addEventListener('click', returnToMenu);
+$('open-settings').addEventListener('click', () => openDialog(settingsDialog));
+$('menu-guide').addEventListener('click', () => openDialog(guide));
 $('fullscreen').addEventListener('click', toggleFullscreen);
 document.addEventListener('fullscreenchange', setFullscreenLabel);
 $('open-guide').addEventListener('click', () => openDialog(guide));
@@ -3261,10 +3415,12 @@ $('world-form').addEventListener('submit', (e) => {
   persist();
   announce('Ton nouveau monde est prêt.');
 });
-eco.addEventListener('change', () => { persist(); invalidate(); });
+eco.addEventListener('change', () => { resetFps(); persist(); invalidate(); });
+showFps.addEventListener('change', () => { resetFps(); persist(); });
 
 window.addEventListener('keydown', (e) => {
-  if (guide.open || worldDialog.open || installDialog?.open || e.ctrlKey || e.metaKey || e.altKey) return;
+  const dialog = activeDialog();
+  if ((dialog && dialog !== inventoryDialog) || e.ctrlKey || e.metaKey || e.altKey) return;
   const code = keyboardCode(e);
   const writing = e.target instanceof HTMLInputElement || e.target.isContentEditable;
   if (!writing && !e.repeat && code === 'KeyE') {
@@ -3282,6 +3438,15 @@ window.addEventListener('keydown', (e) => {
     return;
   }
   if (!playing) return;
+  if (code === 'F3') {
+    e.preventDefault();
+    if (!e.repeat) {
+      showFps.checked = !showFps.checked;
+      resetFps(); saveSoon();
+      announce(showFps.checked ? 'Compteur de FPS affiché' : 'Compteur de FPS masqué');
+    }
+    return;
+  }
   if (/^(Digit|Numpad)[1-8]$/.test(code) || /^[1-8]$/.test(e.key)) {
     e.preventDefault(); select(Number(/^[1-8]$/.test(e.key) ? e.key : code.at(-1)) - 1); return;
   }
@@ -3312,6 +3477,7 @@ function keyboardCode(e) {
 
 document.addEventListener('pointerlockchange', () => {
   const captured = document.pointerLockElement === canvas;
+  if (captured && !playing) { document.exitPointerLock(); return; }
   if (!captured && pointerCaptured) { pauseGame(); return; }
   pointerCaptured = captured;
   if (captured) lockTime = performance.now();
@@ -3360,10 +3526,10 @@ function suspendGame() { if (playing) pauseGame(); else persist(); }
 document.addEventListener('visibilitychange', () => { if (document.hidden) suspendGame(); });
 window.addEventListener('minestart:pause', suspendGame);
 window.addEventListener('minestart:back', (event) => {
-  const dialog = [inventoryDialog, guide, worldDialog, installDialog].find((item) => item?.open);
+  const dialog = activeDialog();
   if (dialog) { dialog.close(); event.preventDefault(); }
   else if (playing) { pauseGame(); event.preventDefault(); }
-  else if (card.classList.contains('theater')) { toggleFullscreen(); event.preventDefault(); }
+  else if (started) { returnToMenu(); event.preventDefault(); }
 });
 window.addEventListener('pagehide', persist);
 if (window.ResizeObserver) new ResizeObserver(invalidate).observe(viewport);

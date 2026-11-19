@@ -1,7 +1,7 @@
 /* Generated copy in docs/. Cache names include the deployment scope and build hash. */
 const ROOT = new URL(self.registration.scope);
 const PREFIX = `minestart-mobile:${ROOT.href}:`;
-const CACHE = `${PREFIX}2dec5ddd3823ec48d2fc`;
+const CACHE = `${PREFIX}0f06fbe5ddf582363898`;
 const FILES = ["index.html","manifest.webmanifest","icons/icon-192.png","icons/icon-512.png","icons/apple-touch-icon.png"];
 const PATHS = new Map(FILES.map((file) => {
   const url = new URL(file, ROOT);

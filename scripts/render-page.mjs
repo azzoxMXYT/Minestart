@@ -4,11 +4,11 @@ export const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url
 const font = (name) => readFileSync(new URL(`../src/fonts/${name}.woff2`, import.meta.url)).toString('base64');
 const licenses = ['pixelify-sans', 'variable-space-grotesk', 'ibm-plex-mono']
   .map((name) => read(`src/fonts/fontsource-${name}-5.3.0-LICENSE.txt`).trim()).join('\n\n');
-const css = [read('src/style.css'), read('src/mobile.css')].join('\n')
+const css = ['style', 'mobile', 'menu'].map((name) => read(`src/${name}.css`)).join('\n')
   .replace('__PIXELIFY__', font('pixelify-sans-latin-700-normal'))
   .replace('__GROTESK__', font('space-grotesk-latin-wght-normal'))
   .replace('__PLEX__', font('ibm-plex-mono-latin-500-normal'));
-const game = ['terrain', 'survival', 'art', 'render', 'inventory', 'game'].map((file) => read(`src/${file}.js`).trim()).join('\n\n');
+const game = ['terrain', 'survival', 'art', 'render', 'inventory', 'fps', 'game'].map((file) => read(`src/${file}.js`).trim()).join('\n\n');
 const webDownload = `<a class="button download" id="download" href="./index.html" download="Minestart.html" title="Télécharger le jeu pour y jouer sans Internet">
         <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span>Télécharger</span>
       </a>`;
